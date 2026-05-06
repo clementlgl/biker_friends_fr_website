@@ -2,7 +2,7 @@
 id: popote
 titre: Popote
 marque: MSR
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Kit de casseroles et poêles pour cuisiner en autonomie.
 specs:
   pieces: 3

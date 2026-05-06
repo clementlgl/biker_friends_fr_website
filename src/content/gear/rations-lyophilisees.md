@@ -2,7 +2,7 @@
 id: rations-lyophilisees
 titre: Rations lyophilisées
 marque: MX3
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Repas complets à réhydrater, longue conservation.
 specs:
   portions: 2

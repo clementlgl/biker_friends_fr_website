@@ -2,7 +2,7 @@
 id: creme-solaire
 titre: Crème solaire
 marque: Avène
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Protection contre les UV lors des longues journées dehors.
 specs:
   indice: 50+

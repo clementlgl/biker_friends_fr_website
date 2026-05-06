@@ -2,7 +2,7 @@
 id: trepied
 titre: Trépied photo
 marque: Manfrotto
-categorie: Studio Média & Tech
+categorie: Tech
 description: Pour des prises de vue stables et des timelapses.
 specs:
   poids: 1.2kg

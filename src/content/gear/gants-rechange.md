@@ -2,7 +2,7 @@
 id: gants-rechange
 titre: Gants de rechange
 marque: Furygan
-categorie: Garde-robe & Textile
+categorie: Vêtements
 description: Pour garder les mains au sec et au chaud.
 specs:
   taille: M

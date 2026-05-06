@@ -2,7 +2,7 @@
 id: antimoustique
 titre: Antimoustique
 marque: Cinq sur Cinq
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Pour repousser les insectes et éviter les piqûres.
 specs:
   contenance: 50ml

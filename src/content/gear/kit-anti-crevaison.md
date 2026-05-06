@@ -2,7 +2,7 @@
 id: kit-anti-crevaison
 titre: Kit anti-crevaison
 marque: Stop&Go
-categorie: Atelier & Assistance
+categorie: Atelier
 description: Permet de réparer une crevaison sur la route.
 specs:
   utilisations: 2

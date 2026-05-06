@@ -2,7 +2,7 @@
 id: gopro-2
 titre: GoPro Hero (2)
 marque: GoPro
-categorie: Studio Média & Tech
+categorie: Tech
 description: Deuxième caméra d'action pour multiplier les angles de vue.
 specs:
   resolution: 4K

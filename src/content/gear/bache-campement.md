@@ -2,7 +2,7 @@
 id: bache-campement
 titre: Bâche de campement
 marque: Decathlon
-categorie: Bivouac & Campement
+categorie: Campement
 description: Protection supplémentaire contre la pluie ou le soleil, idéale pour créer un espace de vie.
 specs:
   dimensions: 3x3m

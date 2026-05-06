@@ -2,7 +2,7 @@
 id: baskets-tongs
 titre: Baskets / tongs
 marque: Adidas
-categorie: Garde-robe & Textile
+categorie: Vêtements
 description: Pour reposer les pieds après la journée de moto.
 specs:
   pointure: 43

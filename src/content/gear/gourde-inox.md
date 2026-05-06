@@ -2,7 +2,7 @@
 id: gourde-inox
 titre: Gourde inox
 marque: Klean Kanteen
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Pour transporter l'eau potable partout.
 specs:
   contenance: 1L

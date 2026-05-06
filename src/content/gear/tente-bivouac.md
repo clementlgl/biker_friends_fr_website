@@ -2,7 +2,7 @@
 id: tente-bivouac
 titre: Tente de bivouac
 marque: MSR
-categorie: Bivouac & Campement
+categorie: Campement
 description: Abri principal pour les nuits en pleine nature, protection contre la pluie et le vent.
 specs:
   poids: 2.1kg

@@ -2,7 +2,7 @@
 id: briquet-tempete
 titre: Briquet tempête
 marque: BIC
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Allumage fiable même par vent fort.
 specs:
   poids: 20g

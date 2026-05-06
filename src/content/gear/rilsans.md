@@ -2,7 +2,7 @@
 id: rilsans
 titre: Colliers de serrage (rilsans)
 marque: Bricorama
-categorie: Atelier & Assistance
+categorie: Atelier
 description: Pour fixer, attacher ou réparer rapidement.
 specs:
   quantite: 10

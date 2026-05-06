@@ -2,7 +2,7 @@
 id: chargeurs
 titre: Chargeurs
 marque: Anker
-categorie: Studio Média & Tech
+categorie: Tech
 description: Pour recharger tous les appareils (USB, secteur, allume-cigare).
 specs:
   types: USB, secteur, 12V

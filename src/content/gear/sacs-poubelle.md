@@ -2,7 +2,7 @@
 id: sacs-poubelle
 titre: Sacs poubelle/congélation
 marque: Albal
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Pour gérer les déchets et stocker la nourriture.
 specs:
   quantite: 10

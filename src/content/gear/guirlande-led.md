@@ -2,7 +2,7 @@
 id: guirlande-led
 titre: Guirlande LED
 marque: Luci
-categorie: Bivouac & Campement
+categorie: Campement
 description: Éclaire le campement et crée une ambiance chaleureuse.
 specs:
   longueur: 5m

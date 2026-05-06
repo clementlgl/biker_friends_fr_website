@@ -2,7 +2,7 @@
 id: sel-poivre
 titre: Sel & poivre
 marque: McCormick
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Pour relever les plats, même en pleine nature.
 specs:
   poids: 20g

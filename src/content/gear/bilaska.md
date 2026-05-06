@@ -2,7 +2,7 @@
 id: bilaska
 titre: Bilaska
 marque: Biogaran
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Antihistaminique pour les allergies.
 specs:
   dosage: 20mg

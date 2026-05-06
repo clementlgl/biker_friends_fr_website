@@ -2,7 +2,7 @@
 id: mousqueton
 titre: Mousqueton
 marque: Black Diamond
-categorie: Logistique & Administratif
+categorie: Administratif
 description: Pour accrocher, suspendre ou sécuriser du matériel.
 specs:
   quantite: 2

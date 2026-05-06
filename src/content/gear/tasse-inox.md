@@ -2,7 +2,7 @@
 id: tasse-inox
 titre: Tasse inox
 marque: Decathlon
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Pour le café du matin ou la soupe du soir.
 specs:
   contenance: 350ml

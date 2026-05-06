@@ -2,7 +2,7 @@
 id: disque-dur
 titre: Disque dur externe
 marque: Samsung
-categorie: Studio Média & Tech
+categorie: Tech
 description: Sauvegarde des images et vidéos en voyage.
 specs:
   capacite: 2To

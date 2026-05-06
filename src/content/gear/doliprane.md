@@ -2,7 +2,7 @@
 id: doliprane
 titre: Doliprane
 marque: Sanofi
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Antidouleur et antipyrétique de base.
 specs:
   dosage: 1000mg

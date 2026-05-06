@@ -2,7 +2,7 @@
 id: chaise-pliante
 titre: Chaise pliante
 marque: Helinox
-categorie: Bivouac & Campement
+categorie: Campement
 description: Pour s'installer confortablement autour du feu.
 specs:
   poids: 900g

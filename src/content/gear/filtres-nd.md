@@ -2,7 +2,7 @@
 id: filtres-nd
 titre: Filtres ND
 marque: Freewell
-categorie: Studio Média & Tech
+categorie: Tech
 description: Pour gérer la lumière et obtenir des effets créatifs en photo/vidéo.
 specs:
   diametre: 67mm

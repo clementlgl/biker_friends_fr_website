@@ -2,7 +2,7 @@
 id: ecran-projection
 titre: Écran de projection
 marque: Celexon
-categorie: Bivouac & Campement
+categorie: Campement
 description: Pour profiter du cinéma en plein air, même loin de tout.
 specs:
   dimensions: 120x200cm

@@ -2,7 +2,7 @@
 id: gel-douche
 titre: Gel douche
 marque: Ushuaïa
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Pour rester propre même en pleine nature.
 specs:
   contenance: 100ml

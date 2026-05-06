@@ -2,7 +2,7 @@
 id: cartes-sd
 titre: Cartes SD
 marque: Sandisk
-categorie: Studio Média & Tech
+categorie: Tech
 description: Stockage rapide et fiable pour photos et vidéos.
 specs:
   capacite: 128Go

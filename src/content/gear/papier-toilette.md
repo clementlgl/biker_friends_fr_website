@@ -2,7 +2,7 @@
 id: papier-toilette
 titre: Papier toilette
 marque: Lotus
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Pour le confort et l'hygiène partout.
 specs:
   rouleaux: 1

@@ -2,7 +2,7 @@
 id: drap-soie
 titre: Drap de soie
 marque: Sea to Summit
-categorie: Bivouac & Campement
+categorie: Campement
 description: Ajoute une couche d'isolation et protège le sac de couchage.
 specs:
   poids: 120g

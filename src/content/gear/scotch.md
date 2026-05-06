@@ -2,7 +2,7 @@
 id: scotch
 titre: Scotch américain
 marque: 3M
-categorie: Atelier & Assistance
+categorie: Atelier
 description: Pour les réparations d'urgence et les fixations temporaires.
 specs:
   longueur: 10m

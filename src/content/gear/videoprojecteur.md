@@ -2,7 +2,7 @@
 id: videoprojecteur
 titre: Vidéo-projecteur portable
 marque: Anker
-categorie: Bivouac & Campement
+categorie: Campement
 description: Transforme le bivouac en cinéma de plein air.
 specs:
   autonomie: 2h

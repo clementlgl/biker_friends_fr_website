@@ -2,7 +2,7 @@
 id: passeport
 titre: Passeport
 marque: République Française
-categorie: Logistique & Administratif
+categorie: Administratif
 description: Pour voyager à l'étranger et prouver son identité.
 specs:
   validite: 2032

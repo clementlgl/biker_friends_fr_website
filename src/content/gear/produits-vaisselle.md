@@ -2,7 +2,7 @@
 id: produits-vaisselle
 titre: Produits vaisselle
 marque: Sea to Summit
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Pour laver la popote et garder le camp propre.
 specs:
   poids: 60g

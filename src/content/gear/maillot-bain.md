@@ -2,7 +2,7 @@
 id: maillot-bain
 titre: Maillot de bain
 marque: Decathlon
-categorie: Garde-robe & Textile
+categorie: Vêtements
 description: Pour profiter des lacs, rivières ou douches improvisées.
 specs:
   taille: L

@@ -2,7 +2,7 @@
 id: micropur
 titre: Micropur
 marque: Katadyn
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Désinfectant pour purifier l'eau.
 specs:
   tablettes: 20

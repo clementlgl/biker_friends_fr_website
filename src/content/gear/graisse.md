@@ -2,7 +2,7 @@
 id: graisse
 titre: Graisse chaîne
 marque: Motul
-categorie: Atelier & Assistance
+categorie: Atelier
 description: Pour entretenir la transmission et prolonger la durée de vie de la chaîne.
 specs:
   contenance: 100ml

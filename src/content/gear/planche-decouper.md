@@ -2,7 +2,7 @@
 id: planche-decouper
 titre: Planche à découper
 marque: Sea to Summit
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Pour préparer légumes, pain ou fromage en bivouac.
 specs:
   poids: 60g

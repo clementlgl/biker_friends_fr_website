@@ -2,7 +2,7 @@
 id: lunettes-soleil
 titre: Lunettes de soleil
 marque: Julbo
-categorie: Garde-robe & Textile
+categorie: Vêtements
 description: Protection UV et confort de conduite.
 specs:
   protection: UV400

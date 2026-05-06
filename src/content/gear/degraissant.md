@@ -2,7 +2,7 @@
 id: degraissant
 titre: Dégraissant
 marque: WD-40
-categorie: Atelier & Assistance
+categorie: Atelier
 description: Pour nettoyer la chaîne et les pièces mécaniques.
 specs:
   contenance: 100ml

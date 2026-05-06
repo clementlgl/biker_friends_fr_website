@@ -2,7 +2,7 @@
 id: argent-liquide
 titre: Argent liquide
 marque: "-"
-categorie: Logistique & Administratif
+categorie: Administratif
 description: Toujours avoir un peu de cash pour les imprévus ou les zones sans CB.
 specs:
   devise: EUR

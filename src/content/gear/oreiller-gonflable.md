@@ -2,7 +2,7 @@
 id: oreiller-gonflable
 titre: Oreiller gonflable
 marque: Trekology
-categorie: Bivouac & Campement
+categorie: Campement
 description: Pour un sommeil réparateur, même sous la tente.
 specs:
   poids: 90g

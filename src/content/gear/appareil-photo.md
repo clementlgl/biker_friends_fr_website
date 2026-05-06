@@ -2,7 +2,7 @@
 id: appareil-photo
 titre: Appareil photo
 marque: Sony
-categorie: Studio Média & Tech
+categorie: Tech
 description: Boîtier hybride pour capturer des images de qualité professionnelle.
 specs:
   capteur: APS-C

@@ -2,7 +2,7 @@
 id: serviettes
 titre: Serviettes microfibre
 marque: Decathlon
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Pour se sécher après la douche ou la baignade.
 specs:
   quantite: 2

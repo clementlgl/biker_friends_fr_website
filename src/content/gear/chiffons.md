@@ -2,7 +2,7 @@
 id: chiffons
 titre: Chiffons microfibre
 marque: Norauto
-categorie: Atelier & Assistance
+categorie: Atelier
 description: Pour nettoyer, essuyer ou protéger les surfaces.
 specs:
   quantite: 5

@@ -2,7 +2,7 @@
 id: trousse-secours
 titre: Trousse de secours
 marque: Care Plus
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Pour soigner les petits bobos et les urgences.
 specs:
   pieces: 25

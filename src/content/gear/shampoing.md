@@ -2,7 +2,7 @@
 id: shampoing
 titre: Shampoing
 marque: Garnier
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Pour garder les cheveux propres en voyage.
 specs:
   contenance: 100ml

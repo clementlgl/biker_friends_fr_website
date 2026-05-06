@@ -2,7 +2,7 @@
 id: vetements-rechange
 titre: Vêtements de rechange
 marque: Uniqlo
-categorie: Garde-robe & Textile
+categorie: Vêtements
 description: 4 ensembles pour rester propre et confortable.
 specs:
   quantite: 4

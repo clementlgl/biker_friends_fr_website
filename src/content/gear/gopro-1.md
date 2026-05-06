@@ -2,7 +2,7 @@
 id: gopro-1
 titre: GoPro Hero
 marque: GoPro
-categorie: Studio Média & Tech
+categorie: Tech
 description: Caméra d'action pour filmer sur la route et en offroad.
 specs:
   resolution: 4K

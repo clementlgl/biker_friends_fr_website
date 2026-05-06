@@ -2,7 +2,7 @@
 id: outils
 titre: Trousse à outils
 marque: Motul
-categorie: Atelier & Assistance
+categorie: Atelier
 description: L'essentiel pour les réparations et l'entretien courant de la moto.
 specs:
   pieces: 12

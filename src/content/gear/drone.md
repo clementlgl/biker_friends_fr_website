@@ -2,7 +2,7 @@
 id: drone
 titre: Drone
 marque: DJI
-categorie: Studio Média & Tech
+categorie: Tech
 description: Pour des prises de vue aériennes spectaculaires.
 specs:
   autonomie: 30min

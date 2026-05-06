@@ -2,7 +2,7 @@
 id: rasoir
 titre: Rasoir
 marque: Bic
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Pour un rasage rapide et efficace.
 specs:
   quantite: 2

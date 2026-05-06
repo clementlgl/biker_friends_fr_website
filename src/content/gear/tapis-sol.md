@@ -2,7 +2,7 @@
 id: tapis-sol
 titre: Tapis de sol
 marque: Therm-a-Rest
-categorie: Bivouac & Campement
+categorie: Campement
 description: Isolation thermique et confort sous la tente.
 specs:
   epaisseur: 1.5cm

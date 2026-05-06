@@ -2,7 +2,7 @@
 id: lampe-frontale
 titre: Lampe frontale
 marque: Petzl
-categorie: Logistique & Administratif
+categorie: Administratif
 description: Éclairage mains libres pour le bivouac ou la mécanique de nuit.
 specs:
   autonomie: 40h

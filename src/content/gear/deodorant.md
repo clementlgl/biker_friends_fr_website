@@ -2,7 +2,7 @@
 id: deodorant
 titre: Déodorant
 marque: Narta
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Pour rester frais toute la journée.
 specs:
   contenance: 50ml

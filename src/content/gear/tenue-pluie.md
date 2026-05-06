@@ -2,7 +2,7 @@
 id: tenue-pluie
 titre: Tenue de pluie
 marque: Dainese
-categorie: Garde-robe & Textile
+categorie: Vêtements
 description: Protection intégrale contre la pluie et le vent.
 specs:
   taille: L

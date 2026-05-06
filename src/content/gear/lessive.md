@@ -2,7 +2,7 @@
 id: lessive
 titre: Lessive voyage
 marque: Sea to Summit
-categorie: Hygiène & Pharmacie
+categorie: Hygiène
 description: Pour laver les vêtements à la main en bivouac.
 specs:
   contenance: 50ml

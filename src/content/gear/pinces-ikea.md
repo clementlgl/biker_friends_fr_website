@@ -2,7 +2,7 @@
 id: pinces-ikea
 titre: Pinces IKEA
 marque: IKEA
-categorie: Cuisine & Ravitaillement
+categorie: Cuisine
 description: Pour refermer les sachets et garder les aliments frais.
 specs:
   quantite: 6

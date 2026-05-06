@@ -2,7 +2,7 @@
 id: jeans
 titre: Jeans
 marque: Levis
-categorie: Garde-robe & Textile
+categorie: Vêtements
 description: Pour la vie au campement ou les balades en ville.
 specs:
   taille: 32

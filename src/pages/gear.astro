@@ -6,7 +6,7 @@ import GearItem from '../components/GearItem.astro';
 import MissionProgressBar from '../components/MissionProgressBar.astro';
 
 const gearItems = (await getCollection('gear')).sort((a, b) => a.data.titre.localeCompare(b.data.titre));
-const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => item.data.categorie)))];
+const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.data.categorie)))];
 ---
 
 <html lang="fr">
@@ -16,7 +16,7 @@ const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => it
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>Gear | Biker Friends</title>
+    <title>Matériel | Biker Friends</title>
     <script is:inline>
       function initTheme() {
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -78,10 +78,9 @@ const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => it
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,163,196,0.15),transparent_42%),radial-gradient(circle_at_80%_0%,rgba(231,236,239,0.1),transparent_38%)]"></div>
         <div class="absolute inset-0 opacity-30 [background-size:4px_4px] [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)]"></div>
         <div class="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-          <p class="font-tech text-xs uppercase tracking-[0.2em] text-tactical-muted">Essential Kit</p>
-          <h1 class="mt-4 max-w-4xl font-display text-6xl leading-[0.88] text-tactical-text">GEAR ARCHIVE</h1>
+          <h1 class="mt-4 max-w-4xl font-display text-6xl leading-[0.88] text-tactical-text">MATÉRIEL</h1>
           <p class="mt-6 max-w-3xl border-l-2 border-tactical-accent pl-4 font-tech text-sm leading-6 text-tactical-text">
-            Curated technical equipment verified through thousands of miles in unforgiving terrain. This is the hardware that separates preparation from liability.
+            Liste de mon materiel que j'enmène sur chaque Road Trip. N'hésite pas à utliser la checklist pour ne rien oublier !
           </p>
         </div>
       </section>
@@ -91,7 +90,7 @@ const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => it
           <div class="flex flex-wrap items-center justify-between gap-4">
             <div id="gear-filters" class="flex flex-wrap gap-2" role="tablist" aria-label="Gear categories">
               {categories.map((category, index) => {
-                const value = category === 'All Gear' ? 'all' : category;
+                const value = category === 'Tous' ? 'all' : category;
                 return (
                   <button
                     type="button"

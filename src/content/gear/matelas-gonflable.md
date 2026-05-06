@@ -2,7 +2,7 @@
 id: matelas-gonflable
 titre: Matelas gonflable
 marque: Sea to Summit
-categorie: Bivouac & Campement
+categorie: Campement
 description: Apporte un confort supplémentaire pour les nuits prolongées.
 specs:
   epaisseur: 5cm
