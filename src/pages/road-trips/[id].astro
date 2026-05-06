@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import CardVoyage from '../../components/CardVoyage.astro';
 import GpxMap from '../../components/GpxMap.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
+import { distanceFromGpx } from '../../utils/gpxDistance';
 
 export async function getStaticPaths() {
   const voyages = await getCollection('voyages');
@@ -19,7 +20,8 @@ interface Props {
 
 const { voyage } = Astro.props;
 
-const { titre, description, distance, duration, gpxFile, image } = voyage.data;
+const { titre, description, duration, gpxFile, image } = voyage.data;
+const distance = distanceFromGpx(gpxFile) ?? voyage.data.distance ?? 0;
 
 const voyageCountries: Record<string, string> = {
   'trans-pyrenean-adventure': 'Europe',

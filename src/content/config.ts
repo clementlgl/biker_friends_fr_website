@@ -12,7 +12,7 @@ const voyages = defineCollection({
     date: z.coerce.date(),
     // difficulty: difficultyEnum, // supprimé
     // terrain: z.string().min(1), // supprimé
-    distance: z.number().positive(),
+    distance: z.number().positive().optional(),
     duration: z.number().positive(),
     image: z.string().min(1),
     gpxFile: z.string().min(1),

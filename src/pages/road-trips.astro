@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { getCollection } from 'astro:content';
 import CardVoyage from '../components/CardVoyage.astro';
 import SiteHeader from '../components/SiteHeader.astro';
+import { distanceFromGpx } from '../utils/gpxDistance';
 
 const voyages = (await getCollection('voyages')).sort((a, b) => a.id.localeCompare(b.id));
 
@@ -48,7 +49,7 @@ const voyageCountries: Record<string, string> = {
               title={voyage.data.titre}
               country={voyageCountries[voyage.id] || 'Unknown'}
               duration={voyage.data.duration}
-              distance={voyage.data.distance}
+              distance={distanceFromGpx(voyage.data.gpxFile) ?? voyage.data.distance ?? 0}
               gpxUrl={voyage.data.gpxFile}
             />
             <a href={`/road-trips/${voyage.slug}`} class="absolute inset-0 z-10" aria-label={voyage.data.titre}></a>
