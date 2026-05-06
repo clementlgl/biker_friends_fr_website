@@ -1,7 +1,6 @@
 ---
 import '../../styles/global.css';
 import { getCollection } from 'astro:content';
-import CardVoyage from '../../components/CardVoyage.astro';
 import GpxMap from '../../components/GpxMap.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import { distanceFromGpx } from '../../utils/gpxDistance';
@@ -31,6 +30,8 @@ const voyageCountries: Record<string, string> = {
 
 const heroImage = image;
 const country = voyageCountries[voyage.id] || 'Unknown';
+const stageOneDistance = Math.ceil((distance * 0.52) / 10) * 10;
+const stageTwoDistance = Math.max(0, distance - stageOneDistance);
 
 const { Content } = await voyage.render();
 ---
@@ -47,48 +48,114 @@ const { Content } = await voyage.render();
   <body>
     <SiteHeader />
 
-    <main class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <a href="/road-trips" class="font-tech text-xs uppercase tracking-[0.18em] text-tactical-accent hover:text-tactical-accentSoft">
-        ← Back to Expeditions
-      </a>
+    <main class="bg-[#090c0b] text-tactical-text">
+      <section class="relative min-h-[30vh] overflow-hidden border-b border-tactical-line">
+        <img src={heroImage} alt={titre} class="absolute inset-0 h-full w-full object-cover" />
+        <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,5,5,0.65)_0%,rgba(4,5,5,0.8)_52%,rgba(4,5,5,0.95)_100%)]"></div>
 
-      <section class="mt-8 grid gap-8 lg:grid-cols-[1.1fr_1fr]">
-        <CardVoyage
-          image={heroImage}
-          title={titre}
-          country={country}
-          duration={duration}
-          distance={distance}
-          gpxUrl={gpxFile}
-        />
+        <div class="relative mx-auto flex min-h-[30vh] max-w-7xl items-end px-4 pb-10 pt-16 sm:px-6 lg:px-8">
+          <div class="grid w-full gap-8 lg:grid-cols-[1fr_340px] lg:items-end">
+            <div>
+              <a href="/road-trips" class="font-tech text-[11px] uppercase tracking-[0.2em] text-tactical-accent hover:text-tactical-accentSoft">
+                ← Retour aux expéditions
+              </a>
+              <h1 class="mt-4 max-w-[12ch] font-display text-5xl uppercase leading-[0.9] sm:text-6xl">{titre}</h1>
+              <p class="mt-5 max-w-2xl font-serif text-xl leading-8 text-zinc-200/90">{description}</p>
+            </div>
 
-        <article class="border border-tactical-line bg-tactical-panel p-4 sm:p-5">
-          <h2 class="font-display text-3xl text-tactical-text">Trace GPX</h2>
-          <p class="mt-2 font-tech text-xs uppercase tracking-[0.2em] text-tactical-muted">
-            {distance.toLocaleString()} km | {duration} jours
-          </p>
-          <div class="mt-5">
-            <GpxMap fileUrl={gpxFile} heightClass="h-[360px]" />
+            <aside class="border border-tactical-line bg-zinc-900/70 p-5 backdrop-blur-sm">
+              <dl class="grid grid-cols-2 gap-x-5 gap-y-4">
+                <div>
+                  <dt class="font-tech text-[10px] uppercase tracking-[0.18em] text-tactical-muted">Distance totale</dt>
+                  <dd class="mt-1 font-display text-4xl leading-none text-tactical-text">{distance.toLocaleString()} km</dd>
+                </div>
+                <div>
+                  <dt class="font-tech text-[10px] uppercase tracking-[0.18em] text-tactical-muted">Durée</dt>
+                  <dd class="mt-1 font-display text-4xl leading-none text-tactical-text">{duration}<span class="ml-1 font-tech text-xs uppercase tracking-[0.14em] text-tactical-muted">jours</span></dd>
+                </div>
+              </dl>
+
+              <div class="mt-5 flex flex-wrap gap-3">
+                <a
+                  href={gpxFile}
+                  download
+                  class="inline-flex items-center gap-2 bg-tactical-accent px-4 py-3 font-tech text-[11px] uppercase tracking-[0.16em] text-[#071014] transition-colors hover:bg-tactical-accentSoft"
+                >
+                  Télécharger la trace GPX
+                </a>
+                {youtubeId && (
+                  <a
+                    href={`https://www.youtube.com/watch?v=${youtubeId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 border border-tactical-line bg-black/40 px-4 py-3 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text transition-colors hover:border-red-500/70 hover:text-red-300"
+                     >
+                      <svg viewBox="0 0 24 24" class="h-4 w-4 text-red-500" fill="currentColor" aria-hidden="true">
+                        <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/>
+                      </svg>
+                      Vidéo YouTube
+                  </a>
+                )}
+              </div>
+            </aside>
           </div>
-        </article>
+        </div>
       </section>
 
-      <article class="prose prose-invert mt-12 max-w-none rounded border border-tactical-line bg-tactical-panel p-6 font-tech text-sm leading-7 text-tactical-muted">
-        <Content />
-        {youtubeId && (
-            <a
-              href={`https://www.youtube.com/watch?v=${youtubeId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="mt-4 inline-flex items-center gap-2 border border-tactical-line bg-tactical-panelSoft px-4 py-2.5 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-muted transition-colors hover:border-tactical-accent hover:text-tactical-accent"
-            >
-              <svg viewBox="0 0 24 24" class="h-4 w-4 text-red-500" fill="currentColor" aria-hidden="true">
-                <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/>
-              </svg>
-              Voir la vidéo
-            </a>
-          )}
-      </article>
+      <section class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[300px_1fr] lg:px-8">
+        <aside class="h-fit border border-tactical-line bg-tactical-panel p-3">
+          <GpxMap fileUrl={gpxFile} heightClass="h-[500px]" />
+        </aside>
+
+        <div class="space-y-8">
+          <article class="border border-tactical-line bg-tactical-panel p-5 sm:p-6">
+            <p class="font-serif text-xl leading-9 text-zinc-100/95">{description}</p>
+            <div class="prose prose-invert mt-6 max-w-none font-tech text-sm leading-7 text-tactical-muted">
+              <Content />
+            </div>
+          </article>
+
+          <article class="border border-tactical-line bg-tactical-panel">
+            <header class="flex flex-wrap items-end justify-between gap-4 border-b border-tactical-line bg-white/[0.06] px-4 py-3 sm:px-5">
+              <h2 class="font-display text-4xl uppercase leading-none">Étape 01</h2>
+              <p class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-muted">Distance <span class="text-tactical-accent">{stageOneDistance.toLocaleString()} km</span></p>
+            </header>
+            <div class="grid gap-0 border-b border-tactical-line md:grid-cols-[1.1fr_1fr]">
+              <img src={heroImage} alt="Stage 01" class="h-72 w-full object-cover" />
+              <div class="p-5">
+                <h3 class="font-display text-3xl uppercase">La Muraille</h3>
+                <p class="mt-3 font-tech text-sm leading-7 text-tactical-muted">
+                 Départ tôt pour la première ascension et les connecteurs techniques. Roulez léger, gardez une marge de carburant et attendez-vous à des changements météorologiques rapides tout au long de la journée.
+                </p>
+              </div>
+            </div>
+            <footer class="flex items-center justify-between px-4 py-3 sm:px-5">
+              <span class="border border-tactical-line px-2 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-tactical-muted">Piste facile/modérée</span>
+              <a href={gpxFile} download class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text hover:text-tactical-accent">Télécharger GPX Jour 1</a>
+            </footer>
+          </article>
+
+          <article class="border border-tactical-line bg-tactical-panel">
+            <header class="flex flex-wrap items-end justify-between gap-4 border-b border-tactical-line bg-white/[0.06] px-4 py-3 sm:px-5">
+              <h2 class="font-display text-4xl uppercase leading-none">Étape 02</h2>
+              <p class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-muted">Distance <span class="text-tactical-accent">{stageTwoDistance.toLocaleString()} km</span></p>
+            </header>
+            <div class="grid gap-0 border-b border-tactical-line md:grid-cols-[1fr_1fr]">
+              <div class="p-5">
+                <h3 class="font-display text-3xl uppercase">La Route des Contrebandiers</h3>
+                <p class="mt-3 font-tech text-sm leading-7 text-tactical-muted">
+                  Le deuxième bloc s'enfonce davantage dans des terrains isolés. Gardez vos choix de ligne propres, préservez l'élan et économisez de l'énergie pour les sections de récupération en fin de journée.
+                </p>
+              </div>
+              <div class="m-5 border border-tactical-line bg-black/25"></div>
+            </div>
+            <footer class="flex items-center justify-between px-4 py-3 sm:px-5">
+              <span class="border border-red-400/40 bg-red-400/10 px-2 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-red-300">Alerte technique</span>
+              <a href={gpxFile} download class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text hover:text-tactical-accent">Télécharger GPX Jour 2</a>
+            </footer>
+          </article>
+        </div>
+      </section>
     </main>
   </body>
 </html>
