@@ -1,0 +1,79 @@
+---
+import '../../styles/global.css';
+import { getCollection } from 'astro:content';
+import CardVoyage from '../../components/CardVoyage.astro';
+import GpxMap from '../../components/GpxMap.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+
+export async function getStaticPaths() {
+  const voyages = await getCollection('voyages');
+  return voyages.map((voyage) => ({
+    params: { id: voyage.slug },
+    props: { voyage }
+  }));
+}
+
+interface Props {
+  voyage: any;
+}
+
+const { voyage } = Astro.props;
+
+const { titre, description, distance, duration, gpxFile, image } = voyage.data;
+
+const voyageCountries: Record<string, string> = {
+  'trans-pyrenean-adventure': 'Europe',
+  'carretera-austral': 'Patagonie',
+  'dalton-highway': 'Alaska'
+};
+
+const heroImage = image;
+const country = voyageCountries[voyage.id] || 'Unknown';
+
+const { Content } = await voyage.render();
+---
+
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{titre} | Biker Friends</title>
+  </head>
+  <body>
+    <SiteHeader />
+
+    <main class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <a href="/road-trips" class="font-tech text-xs uppercase tracking-[0.18em] text-tactical-accent hover:text-tactical-accentSoft">
+        ← Back to Expeditions
+      </a>
+
+      <section class="mt-8 grid gap-8 lg:grid-cols-[1.1fr_1fr]">
+        <CardVoyage
+          image={heroImage}
+          title={titre}
+          country={country}
+          duration={duration}
+          distance={distance}
+          gpxUrl={gpxFile}
+        />
+
+        <article class="border border-tactical-line bg-tactical-panel p-4 sm:p-5">
+          <h2 class="font-display text-3xl text-tactical-text">Trace GPX</h2>
+          <p class="mt-2 font-tech text-xs uppercase tracking-[0.2em] text-tactical-muted">
+            {distance.toLocaleString()} km | {duration} jours
+          </p>
+          <div class="mt-5">
+            <GpxMap fileUrl={gpxFile} heightClass="h-[360px]" />
+          </div>
+        </article>
+      </section>
+
+      <article class="prose prose-invert mt-12 max-w-none rounded border border-tactical-line bg-tactical-panel p-6 font-tech text-sm leading-7 text-tactical-muted">
+        <Content />
+      </article>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,69 @@
+---
+
+interface Props {
+  image: string;
+  title: string;
+  country?: string;
+  duration: number;
+  distance: number;
+  gpxUrl?: string;
+}
+
+
+const {
+  image,
+  title,
+  country = 'Unknown Region',
+  duration,
+  distance,
+  gpxUrl = '#'
+} = Astro.props;
+
+---
+
+<article class="group relative flex flex-col h-full overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical transition-transform duration-300 hover:-translate-y-0.5">
+  <div class="relative flex-1 min-h-[430px] w-full overflow-hidden">
+    <img
+      src={image}
+      alt={title}
+      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+      loading="lazy"
+    />
+    <div class="absolute inset-0 bg-tactical-overlay"></div>
+
+    <div class="absolute left-4 top-4 flex items-center gap-2">
+      <span class="border border-tactical-line bg-black/55 px-2.5 py-1 font-tech text-[10px] uppercase tracking-tactical text-tactical-muted">
+        {duration} days
+      </span>
+    </div>
+
+    <div class="absolute inset-x-0 bottom-0 p-5">
+      <p class="font-tech text-xs uppercase tracking-[0.22em] text-tactical-accent">{country}</p>
+      <h3 class="mt-2 max-w-[16ch] font-display text-5xl uppercase leading-[0.92] text-tactical-text">
+        {title}
+      </h3>
+    </div>
+  </div>
+
+  <footer class="flex items-end justify-between gap-3 border-t border-tactical-line bg-tactical-panelSoft/85 px-5 py-4">
+    <dl class="grid grid-cols-1 gap-6">
+      <div>
+        <dt class="font-tech text-[10px] uppercase tracking-[0.22em] text-tactical-muted">Distance</dt>
+        <dd class="mt-1 font-tech text-sm uppercase tracking-wide text-tactical-text">{distance.toLocaleString()} km</dd>
+      </div>
+    </dl>
+
+    <a
+      href={gpxUrl}
+      class="relative z-20 inline-flex items-center gap-2 border border-tactical-accent/60 bg-tactical-accent/10 px-3 py-2 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-accent transition-colors hover:bg-tactical-accent hover:text-[#071014]"
+      download
+    >
+      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M12 3v11" stroke-linecap="round" />
+        <path d="m7.5 10.5 4.5 4.5 4.5-4.5" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M4 18.5h16" stroke-linecap="round" />
+      </svg>
+      GPX
+    </a>
+  </footer>
+</article>

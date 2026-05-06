@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Biker Friends" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Trans-Pyrenean Adventure</name>
+  </metadata>
+  <trk>
+    <name>Trans-Pyrenean Adventure</name>
+    <trkseg>
+      <trkpt lat="42.2670" lon="3.2040"><ele>12</ele></trkpt>
+      <trkpt lat="42.3440" lon="2.9150"><ele>228</ele></trkpt>
+      <trkpt lat="42.4830" lon="2.2220"><ele>860</ele></trkpt>
+      <trkpt lat="42.6290" lon="1.5180"><ele>1390</ele></trkpt>
+      <trkpt lat="42.7640" lon="0.5810"><ele>1610</ele></trkpt>
+      <trkpt lat="42.8610" lon="-0.2130"><ele>1420</ele></trkpt>
+      <trkpt lat="43.0060" lon="-0.9070"><ele>960</ele></trkpt>
+      <trkpt lat="43.2800" lon="-1.5900"><ele>18</ele></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

@@ -1,0 +1,27 @@
+---
+const navItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Road Trips', href: '/road-trips' },
+  { label: 'Gear', href: '#gear' },
+  { label: 'Journal', href: '#journal' }
+];
+---
+
+<header class="sticky top-0 z-50 border-b border-tactical-line bg-[#121212]/92 backdrop-blur-sm">
+  <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <nav aria-label="Primary" class="flex items-center gap-4 sm:gap-7">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          class="font-display text-sm uppercase tracking-[0.08em] text-tactical-muted transition-colors hover:text-tactical-accent"
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <a href="/" class="grid h-8 w-8 place-items-center border border-tactical-line bg-black/40">
+      <span class="font-tech text-[10px] tracking-[0.18em] text-tactical-accent">BF</span>
+    </a>
+  </div>
+</header>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Biker Friends" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Dalton Highway</name>
+  </metadata>
+  <trk>
+    <name>Dalton Highway</name>
+    <trkseg>
+      <trkpt lat="64.8621" lon="-149.5007"><ele>200</ele></trkpt>
+      <trkpt lat="65.5000" lon="-149.6000"><ele>420</ele></trkpt>
+      <trkpt lat="66.2000" lon="-150.1000"><ele>580</ele></trkpt>
+      <trkpt lat="66.9000" lon="-150.7000"><ele>680</ele></trkpt>
+      <trkpt lat="67.6000" lon="-151.2000"><ele>780</ele></trkpt>
+      <trkpt lat="68.3000" lon="-151.4000"><ele>820</ele></trkpt>
+      <trkpt lat="69.0000" lon="-151.0000"><ele>680</ele></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

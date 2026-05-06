@@ -1,0 +1,60 @@
+---
+import '../styles/global.css';
+import { getCollection } from 'astro:content';
+import CardVoyage from '../components/CardVoyage.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+
+const voyages = (await getCollection('voyages')).sort((a, b) => a.id.localeCompare(b.id));
+
+const voyageImages: Record<string, string> = {
+  'trans-pyrenean-adventure': '/images/road-trips/trans-pyrenean-adventure.svg',
+  'carretera-austral': '/images/road-trips/carretera-austral.svg',
+  'dalton-highway': '/images/road-trips/dalton-highway.svg'
+};
+
+const voyageCountries: Record<string, string> = {
+  'trans-pyrenean-adventure': 'Europe',
+  'carretera-austral': 'Patagonie',
+  'dalton-highway': 'Alaska'
+};
+---
+
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Road Trips | Biker Friends</title>
+  </head>
+  <body>
+    <SiteHeader />
+
+    <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <header class="mb-12 border-b border-tactical-line pb-6">
+        <p class="font-tech text-xs uppercase tracking-[0.24em] text-tactical-accent">Road Trips</p>
+        <h1 class="mt-3 font-display text-5xl leading-[0.9] text-tactical-text">Expeditions</h1>
+        <p class="mt-4 max-w-3xl font-tech text-sm leading-6 text-tactical-muted">
+          Archive des itineraires techniques. Telecharge les traces GPX et prepare ton rig pour partir hors-reseau.
+        </p>
+      </header>
+
+      <section id="trips" class="grid gap-6" style="grid-template-columns: repeat(3, 1fr)">
+        {voyages.map((voyage) => (
+          <div class="group relative h-full">
+            <CardVoyage
+              image={voyage.data.image}
+              title={voyage.data.titre}
+              country={voyageCountries[voyage.id] || 'Unknown'}
+              duration={voyage.data.duration}
+              distance={voyage.data.distance}
+              gpxUrl={voyage.data.gpxFile}
+            />
+            <a href={`/road-trips/${voyage.slug}`} class="absolute inset-0 z-10" aria-label={voyage.data.titre}></a>
+          </div>
+        ))}
+      </section>
+    </main>
+  </body>
+</html>
