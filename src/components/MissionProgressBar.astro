@@ -1,0 +1,135 @@
+---
+export interface Props {
+  total: number;
+  storageKey?: string;
+}
+
+const { total, storageKey = 'bf-gear-checklist-v1' } = Astro.props;
+---
+
+<aside
+  id="mission-progress-bar"
+  class="sticky top-14 z-40 hidden border-b border-tactical-line bg-tactical-panel/80 px-4 py-3 backdrop-blur-sm sm:px-6 lg:px-8"
+>
+  <div class="mx-auto max-w-7xl">
+    <!-- Labels row -->
+    <div class="mb-2.5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <!-- Blinking status dot -->
+        <span id="mpb-dot" class="block h-1.5 w-1.5 rounded-full bg-tactical-muted"></span>
+        <span class="font-tech text-[10px] uppercase tracking-[0.24em] text-tactical-muted">
+          Mission Readiness
+        </span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="mpb-count" class="font-tech text-[10px] tabular-nums text-tactical-muted">
+          0 / {total}
+        </span>
+        <span id="mpb-pct" class="font-tech text-sm tabular-nums text-tactical-accent">
+          0%
+        </span>
+      </div>
+    </div>
+
+    <!-- Track -->
+    <div class="relative h-[6px] w-full overflow-visible bg-tactical-line">
+      <!-- Fill -->
+      <div
+        id="mpb-fill"
+        class="absolute left-0 top-0 h-full origin-left bg-tactical-accent transition-[width] duration-500 ease-out"
+        style="width: 0%"
+      ></div>
+
+      <!-- Cursor: diamond at the tip -->
+      <div
+        id="mpb-cursor"
+        class="absolute top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transition-[left] duration-500 ease-out"
+        style="left: 0%; opacity: 0"
+      >
+        <div
+          class="h-2.5 w-2.5 rotate-45 border border-tactical-accent bg-[#121212]"
+          style="box-shadow: 0 0 6px rgba(0,163,196,0.5)"
+        ></div>
+      </div>
+    </div>
+
+    <!-- 100% label (hidden until complete) -->
+    <p
+      id="mpb-complete-msg"
+      class="mt-2 font-tech text-[10px] uppercase tracking-[0.2em] text-tactical-accentSoft opacity-0 transition-opacity duration-500"
+    >
+      ▶ All systems go — ready to depart
+    </p>
+  </div>
+</aside>
+
+<style>
+  @keyframes mpb-glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 6px rgba(0, 163, 196, 0.5), 0 0 16px rgba(0, 163, 196, 0.25);
+    }
+    50% {
+      box-shadow: 0 0 14px rgba(0, 163, 196, 0.9), 0 0 32px rgba(0, 163, 196, 0.5);
+    }
+  }
+
+  @keyframes mpb-dot-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+  }
+
+  #mpb-fill.is-complete {
+    background-color: #58d7ec; /* tactical-accentSoft */
+    animation: mpb-glow-pulse 1.8s ease-in-out infinite;
+  }
+
+  #mpb-dot.is-active {
+    background-color: #00A3C4;
+    animation: mpb-dot-blink 1.4s ease-in-out infinite;
+  }
+</style>
+
+<script define:vars={{ total, storageKey }}>
+  const fill       = document.getElementById('mpb-fill');
+  const cursor     = document.getElementById('mpb-cursor');
+  const pctEl      = document.getElementById('mpb-pct');
+  const countEl    = document.getElementById('mpb-count');
+  const dot        = document.getElementById('mpb-dot');
+  const completeEl = document.getElementById('mpb-complete-msg');
+
+  function update() {
+    const checked = JSON.parse(localStorage.getItem(storageKey) ?? '[]');
+    const count   = Math.min(checked.length, total);
+    const pct     = total > 0 ? Math.round((count / total) * 100) : 0;
+
+    if (fill) {
+      fill.style.width = `${pct}%`;
+      fill.classList.toggle('is-complete', pct === 100);
+    }
+
+    if (cursor) {
+      cursor.style.left    = `${pct}%`;
+      cursor.style.opacity = pct > 0 ? '1' : '0';
+    }
+
+    if (pctEl)  pctEl.textContent  = `${pct}%`;
+    if (countEl) countEl.textContent = `${count} / ${total}`;
+
+    if (dot) dot.classList.toggle('is-active', count > 0);
+
+    if (completeEl) {
+      completeEl.style.opacity = pct === 100 ? '1' : '0';
+    }
+  }
+
+  // React to same-tab toggles via custom event
+  window.addEventListener('gear:checklist-updated', update);
+
+  // React to other tabs / external changes via storage event
+  window.addEventListener('storage', (e) => {
+    if (e.key === storageKey) update();
+  });
+
+  // Initial render
+  document.addEventListener('DOMContentLoaded', update);
+</script>

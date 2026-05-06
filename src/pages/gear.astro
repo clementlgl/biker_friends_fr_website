@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { getCollection } from 'astro:content';
 import SiteHeader from '../components/SiteHeader.astro';
 import GearItem from '../components/GearItem.astro';
+import MissionProgressBar from '../components/MissionProgressBar.astro';
 
 const gearItems = (await getCollection('gear')).sort((a, b) => a.data.titre.localeCompare(b.data.titre));
 const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => item.data.categorie)))];
@@ -16,9 +17,29 @@ const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => it
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>Gear | Biker Friends</title>
+    <style is:global>
+      /* Checklist mode – checked item states */
+      .gear-item.is-checked .checklist-view {
+        border-color: rgba(0, 163, 196, 0.45) !important;
+        background-color: rgba(0, 163, 196, 0.04) !important;
+      }
+      .gear-item.is-checked .checkbox-indicator {
+        border-color: #00A3C4 !important;
+        background-color: rgba(0, 163, 196, 0.18) !important;
+      }
+      .gear-item.is-checked .checkmark-icon {
+        display: block !important;
+      }
+      .gear-item.is-checked .item-title-text {
+        text-decoration: line-through;
+        opacity: 0.45;
+        color: #8b949e;
+      }
+    </style>
   </head>
   <body>
     <SiteHeader />
+    <MissionProgressBar total={gearItems.length} />
 
     <main class="pb-16">
       <section class="relative overflow-hidden border-b border-tactical-line">
@@ -35,35 +56,61 @@ const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => it
 
       <section class="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="border-y border-tactical-line py-4">
-          <div id="gear-filters" class="flex flex-wrap gap-3" role="tablist" aria-label="Gear categories">
-            {categories.map((category, index) => {
-              const value = category === 'All Gear' ? 'all' : category;
-              return (
-                <button
-                  type="button"
-                  class={`filter-btn border px-4 py-2 font-tech text-xs uppercase tracking-[0.14em] transition-colors ${
-                    index === 0
-                      ? 'border-tactical-accent bg-tactical-accent text-black'
-                      : 'border-tactical-line text-tactical-text hover:border-tactical-accent hover:text-tactical-accentSoft'
-                  }`}
-                  data-filter={value}
-                  aria-pressed={index === 0 ? 'true' : 'false'}
-                >
-                  {category}
-                </button>
-              );
-            })}
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div id="gear-filters" class="flex flex-wrap gap-2" role="tablist" aria-label="Gear categories">
+              {categories.map((category, index) => {
+                const value = category === 'All Gear' ? 'all' : category;
+                return (
+                  <button
+                    type="button"
+                    class={`filter-btn border px-4 py-2 font-tech text-xs uppercase tracking-[0.14em] transition-colors ${
+                      index === 0
+                        ? 'border-tactical-accent bg-tactical-accent text-black'
+                        : 'border-tactical-line text-tactical-text hover:border-tactical-accent hover:text-tactical-accentSoft'
+                    }`}
+                    data-filter={value}
+                    aria-pressed={index === 0 ? 'true' : 'false'}
+                  >
+                    {category}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div class="flex shrink-0 items-center gap-2">
+              <button
+                id="toggle-mode-btn"
+                type="button"
+                class="flex items-center gap-2 border border-tactical-line px-4 py-2 font-tech text-xs uppercase tracking-[0.14em] text-tactical-muted transition-colors hover:border-tactical-accent hover:text-tactical-accentSoft"
+                aria-pressed="false"
+              >
+                <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <rect x="2" y="2" width="4.5" height="4.5" rx="0.5"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5h5M9 8h5M9 11.5h5"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l1 1 2-2.5"/>
+                </svg>
+                <span>Checklist Mode</span>
+              </button>
+              <button
+                id="reset-checklist-btn"
+                type="button"
+                class="hidden border border-tactical-line px-3 py-2 font-tech text-xs uppercase tracking-[0.14em] text-tactical-muted transition-colors hover:border-red-500/50 hover:text-red-400"
+                title="Vider la checklist"
+              >
+                ↺ Reset
+              </button>
+            </div>
           </div>
         </div>
 
         <div id="gear-grid" class="mt-8 grid gap-8 md:grid-cols-2">
           {gearItems.map((item) => (
             <GearItem
+              id={item.data.id}
               titre={item.data.titre}
               marque={item.data.marque}
               categorie={item.data.categorie}
               description={item.data.description}
-              proTip={item.data.proTip}
               image={item.data.image}
               specs={item.data.specs}
             />
@@ -74,33 +121,123 @@ const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => it
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        const STORAGE_KEY = 'bf-gear-checklist-v1';
+
+        // ── State ────────────────────────────────────────────────────
+        let isChecklistMode = false;
+        let checkedItems = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'));
+
+        // ── DOM refs ─────────────────────────────────────────────────
         const filterButtons = Array.from(document.querySelectorAll('.filter-btn'));
-        const gearCards = Array.from(document.querySelectorAll('#gear-grid [data-category]'));
+        const gearCards     = Array.from(document.querySelectorAll('#gear-grid .gear-item'));
+        const grid          = document.getElementById('gear-grid');
+        const toggleModeBtn = document.getElementById('toggle-mode-btn');
+        const resetBtn      = document.getElementById('reset-checklist-btn');
 
-        const applyFilter = (selectedFilter) => {
+        // ── Icons ────────────────────────────────────────────────────
+        const CHECKLIST_ICON = `<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="2" width="4.5" height="4.5" rx="0.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5h5M9 8h5M9 11.5h5"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l1 1 2-2.5"/></svg>`;
+        const GALLERY_ICON   = `<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="0.5"/><rect x="9" y="1" width="6" height="6" rx="0.5"/><rect x="1" y="9" width="6" height="6" rx="0.5"/><rect x="9" y="9" width="6" height="6" rx="0.5"/></svg>`;
+
+        // ── Filter ───────────────────────────────────────────────────
+        const applyFilter = (filter) => {
           for (const card of gearCards) {
-            const cardCategory = card.getAttribute('data-category');
-            const isVisible = selectedFilter === 'all' || cardCategory === selectedFilter;
-            card.classList.toggle('hidden', !isVisible);
+            const cat = card.getAttribute('data-category');
+            card.classList.toggle('hidden', filter !== 'all' && cat !== filter);
           }
-
-          for (const button of filterButtons) {
-            const isActive = button.getAttribute('data-filter') === selectedFilter;
-            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            button.classList.toggle('border-tactical-accent', isActive);
-            button.classList.toggle('bg-tactical-accent', isActive);
-            button.classList.toggle('text-black', isActive);
-            button.classList.toggle('border-tactical-line', !isActive);
-            button.classList.toggle('text-tactical-text', !isActive);
+          for (const btn of filterButtons) {
+            const active = btn.getAttribute('data-filter') === filter;
+            btn.setAttribute('aria-pressed', String(active));
+            btn.classList.toggle('border-tactical-accent', active);
+            btn.classList.toggle('bg-tactical-accent', active);
+            btn.classList.toggle('text-black', active);
+            btn.classList.toggle('border-tactical-line', !active);
+            btn.classList.toggle('text-tactical-text', !active);
           }
         };
 
-        for (const button of filterButtons) {
-          button.addEventListener('click', () => {
-            const filter = button.getAttribute('data-filter') ?? 'all';
-            applyFilter(filter);
+        // ── Checklist ────────────────────────────────────────────────
+        const saveChecked = () =>
+          localStorage.setItem(STORAGE_KEY, JSON.stringify([...checkedItems]));
+
+        const refreshCardVisual = (card) => {
+          const id      = card.getAttribute('data-gear-id') ?? '';
+          const checked = checkedItems.has(id);
+          card.classList.toggle('is-checked', checked);
+          const checklistView = card.querySelector('.checklist-view');
+          if (checklistView) checklistView.setAttribute('aria-checked', String(checked));
+        };
+
+        const toggleItem = (id) => {
+          checkedItems.has(id) ? checkedItems.delete(id) : checkedItems.add(id);
+          saveChecked();
+          const card = document.querySelector(`.gear-item[data-gear-id="${CSS.escape(id)}"]`);
+          if (card) refreshCardVisual(card);
+          window.dispatchEvent(new CustomEvent('gear:checklist-updated'));
+        };
+
+        // ── Mode switch ──────────────────────────────────────────────
+        const setMode = (checklist) => {
+          isChecklistMode = checklist;
+          const progressBar = document.getElementById('mission-progress-bar');
+
+          document.querySelectorAll('.gallery-view').forEach((el) => {
+            el.style.display = checklist ? 'none' : '';
+          });
+          document.querySelectorAll('.checklist-view').forEach((el) => {
+            el.style.display = checklist ? 'flex' : 'none';
+          });
+
+          if (checklist) {
+            grid.classList.remove('grid', 'md:grid-cols-2', 'gap-8');
+            grid.classList.add('flex', 'flex-col', 'gap-px');
+            toggleModeBtn.innerHTML = `${GALLERY_ICON}<span>Gallery Mode</span>`;
+            toggleModeBtn.classList.add('border-tactical-accent', 'text-tactical-accentSoft');
+            toggleModeBtn.classList.remove('border-tactical-line', 'text-tactical-muted');
+            resetBtn.classList.remove('hidden');
+            if (progressBar) progressBar.classList.remove('hidden');
+            gearCards.forEach(refreshCardVisual);
+          } else {
+            grid.classList.remove('flex', 'flex-col', 'gap-px');
+            grid.classList.add('grid', 'md:grid-cols-2', 'gap-8');
+            toggleModeBtn.innerHTML = `${CHECKLIST_ICON}<span>Checklist Mode</span>`;
+            toggleModeBtn.classList.remove('border-tactical-accent', 'text-tactical-accentSoft');
+            toggleModeBtn.classList.add('border-tactical-line', 'text-tactical-muted');
+            resetBtn.classList.add('hidden');
+            if (progressBar) progressBar.classList.add('hidden');
+          }
+
+          toggleModeBtn.setAttribute('aria-pressed', String(checklist));
+        };
+
+        // ── Events ───────────────────────────────────────────────────
+        for (const btn of filterButtons) {
+          btn.addEventListener('click', () => applyFilter(btn.getAttribute('data-filter') ?? 'all'));
+        }
+
+        toggleModeBtn.addEventListener('click', () => setMode(!isChecklistMode));
+
+        resetBtn.addEventListener('click', () => {
+          checkedItems.clear();
+          saveChecked();
+          gearCards.forEach(refreshCardVisual);
+          window.dispatchEvent(new CustomEvent('gear:checklist-updated'));
+        });
+
+        for (const card of gearCards) {
+          card.querySelector('.checklist-view')?.addEventListener('click', () => {
+            toggleItem(card.getAttribute('data-gear-id') ?? '');
+          });
+          // Keyboard support
+          card.querySelector('.checklist-view')?.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              toggleItem(card.getAttribute('data-gear-id') ?? '');
+            }
           });
         }
+
+        // ── Init ─────────────────────────────────────────────────────
+        applyFilter('all');
       });
     </script>
   </body>

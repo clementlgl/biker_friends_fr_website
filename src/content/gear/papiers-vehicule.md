@@ -1,7 +1,7 @@
 ---
 id: papiers-vehicule
 titre: Papiers du véhicule
-marque: -
+marque: "-"
 categorie: Logistique & Administratif
 description: Carte grise, assurance, permis, indispensables pour rouler.
 specs:

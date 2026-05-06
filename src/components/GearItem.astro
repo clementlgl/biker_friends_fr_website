@@ -1,42 +1,89 @@
 ---
 export interface Props {
+  id: string;
   titre: string;
   marque: string;
   categorie: string;
   description: string;
-  proTip: string;
+  proTip?: string;
   image: string;
   specs?: Record<string, string | number | boolean>;
 }
 
-const { titre, marque, categorie, description, proTip, image, specs = {} } = Astro.props;
-
+const { id, titre, marque, categorie, description, image, specs = {} } = Astro.props;
 const specEntries = Object.entries(specs).slice(0, 2);
 ---
 
-<article class="overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical" data-category={categorie}>
-  <div class="relative">
-    <img src={image} alt={titre} class="h-72 w-full object-cover md:h-80" loading="lazy" />
-    <div class="absolute right-3 top-3 flex flex-col items-end gap-2">
-      <span class="border border-tactical-line bg-black/45 px-3 py-1 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text">
-        {categorie}
-      </span>
-      {specEntries.map(([key, value]) => (
-        <span class="border border-tactical-accent/50 bg-[#0d171c]/80 px-3 py-1 font-tech text-[11px] uppercase tracking-[0.14em] text-tactical-accentSoft">
-          {String(value)} {key.replaceAll('_', ' ')}
+<article
+  class="gear-item transition-all duration-200"
+  data-category={categorie}
+  data-gear-id={id}
+>
+  <!-- ── Gallery View ──────────────────────────────────────────── -->
+  <div class="gallery-view overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical">
+    <div class="relative">
+      <img src={image} alt={titre} class="h-72 w-full object-cover md:h-80" loading="lazy" />
+      <div class="absolute right-3 top-3 flex flex-col items-end gap-2">
+        <span class="border border-tactical-line bg-black/45 px-3 py-1 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text">
+          {categorie}
         </span>
-      ))}
+        {specEntries.map(([key, value]) => (
+          <span class="border border-tactical-accent/50 bg-[#0d171c]/80 px-3 py-1 font-tech text-[11px] uppercase tracking-[0.14em] text-tactical-accentSoft">
+            {String(value)} {key.replaceAll('_', ' ')}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <div class="space-y-4 p-6">
+      <header>
+        <h2 class="font-display text-4xl leading-[0.92] text-tactical-text">
+          {titre.toUpperCase()}
+        </h2>
+        <p class="mt-2 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent">{marque.toUpperCase()}</p>
+      </header>
+      <p class="font-tech text-sm leading-6 text-tactical-muted">{description}</p>
     </div>
   </div>
 
-  <div class="space-y-4 p-6">
-    <header>
-      <h2 class="font-display text-4xl leading-[0.92] text-tactical-text">
-        {titre.toUpperCase()}
-      </h2>
-      <p class="mt-2 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent">{marque.toUpperCase()}</p>
-    </header>
+  <!-- ── Checklist View ────────────────────────────────────────── -->
+  <div
+    class="checklist-view cursor-pointer select-none items-center gap-3 border border-tactical-line bg-tactical-panel/30 px-5 py-3 transition-colors duration-150 hover:bg-tactical-panel/70"
+    style="display:none"
+    role="checkbox"
+    aria-checked="false"
+    tabindex="0"
+  >
+    <!-- Checkbox indicator -->
+    <div class="checkbox-indicator flex h-5 w-5 shrink-0 items-center justify-center border border-tactical-line transition-all duration-150">
+      <svg
+        class="checkmark-icon h-3 w-3 text-tactical-accent"
+        fill="none"
+        viewBox="0 0 12 12"
+        stroke="currentColor"
+        stroke-width="2.5"
+        style="display:none"
+        aria-hidden="true"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M1.5 6L5 9.5L10.5 2.5" />
+      </svg>
+    </div>
 
-    <p class="font-tech text-sm leading-6 text-tactical-muted">{description}</p>
+    <!-- Title -->
+    <span class="item-title-text flex-1 truncate font-tech text-sm text-tactical-text transition-all duration-150">
+      {titre}
+    </span>
+
+    <!-- Category badge -->
+    <span class="shrink-0 border border-tactical-line px-2 py-0.5 font-tech text-[10px] uppercase tracking-[0.14em] text-tactical-muted">
+      {categorie}
+    </span>
+
+    <!-- First spec value -->
+    {specEntries.length > 0 && (
+      <span class="hidden shrink-0 font-tech text-[10px] text-tactical-accent/70 sm:block">
+        {String(specEntries[0][1])} {specEntries[0][0].replaceAll('_', ' ')}
+      </span>
+    )}
   </div>
 </article>
