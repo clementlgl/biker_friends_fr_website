@@ -10,8 +10,6 @@ const voyages = defineCollection({
     titre: z.string().min(1),
     description: z.string().min(1),
     date: z.coerce.date(),
-    // difficulty: difficultyEnum, // supprimé
-    // terrain: z.string().min(1), // supprimé
     distance: z.number().positive().optional(),
     duration: z.number().positive(),
     image: z.string().min(1),
