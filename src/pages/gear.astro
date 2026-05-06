@@ -1,0 +1,107 @@
+---
+import '../styles/global.css';
+import { getCollection } from 'astro:content';
+import SiteHeader from '../components/SiteHeader.astro';
+import GearItem from '../components/GearItem.astro';
+
+const gearItems = (await getCollection('gear')).sort((a, b) => a.data.titre.localeCompare(b.data.titre));
+const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => item.data.categorie)))];
+---
+
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Gear | Biker Friends</title>
+  </head>
+  <body>
+    <SiteHeader />
+
+    <main class="pb-16">
+      <section class="relative overflow-hidden border-b border-tactical-line">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,163,196,0.15),transparent_42%),radial-gradient(circle_at_80%_0%,rgba(231,236,239,0.1),transparent_38%)]"></div>
+        <div class="absolute inset-0 opacity-30 [background-size:4px_4px] [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)]"></div>
+        <div class="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <p class="font-tech text-xs uppercase tracking-[0.2em] text-tactical-muted">Essential Kit</p>
+          <h1 class="mt-4 max-w-4xl font-display text-6xl leading-[0.88] text-tactical-text">GEAR ARCHIVE</h1>
+          <p class="mt-6 max-w-3xl border-l-2 border-tactical-accent pl-4 font-tech text-sm leading-6 text-tactical-text">
+            Curated technical equipment verified through thousands of miles in unforgiving terrain. This is the hardware that separates preparation from liability.
+          </p>
+        </div>
+      </section>
+
+      <section class="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="border-y border-tactical-line py-4">
+          <div id="gear-filters" class="flex flex-wrap gap-3" role="tablist" aria-label="Gear categories">
+            {categories.map((category, index) => {
+              const value = category === 'All Gear' ? 'all' : category;
+              return (
+                <button
+                  type="button"
+                  class={`filter-btn border px-4 py-2 font-tech text-xs uppercase tracking-[0.14em] transition-colors ${
+                    index === 0
+                      ? 'border-tactical-accent bg-tactical-accent text-black'
+                      : 'border-tactical-line text-tactical-text hover:border-tactical-accent hover:text-tactical-accentSoft'
+                  }`}
+                  data-filter={value}
+                  aria-pressed={index === 0 ? 'true' : 'false'}
+                >
+                  {category}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div id="gear-grid" class="mt-8 grid gap-8 md:grid-cols-2">
+          {gearItems.map((item) => (
+            <GearItem
+              titre={item.data.titre}
+              marque={item.data.marque}
+              categorie={item.data.categorie}
+              description={item.data.description}
+              proTip={item.data.proTip}
+              image={item.data.image}
+              specs={item.data.specs}
+            />
+          ))}
+        </div>
+      </section>
+    </main>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const filterButtons = Array.from(document.querySelectorAll('.filter-btn'));
+        const gearCards = Array.from(document.querySelectorAll('#gear-grid [data-category]'));
+
+        const applyFilter = (selectedFilter) => {
+          for (const card of gearCards) {
+            const cardCategory = card.getAttribute('data-category');
+            const isVisible = selectedFilter === 'all' || cardCategory === selectedFilter;
+            card.classList.toggle('hidden', !isVisible);
+          }
+
+          for (const button of filterButtons) {
+            const isActive = button.getAttribute('data-filter') === selectedFilter;
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            button.classList.toggle('border-tactical-accent', isActive);
+            button.classList.toggle('bg-tactical-accent', isActive);
+            button.classList.toggle('text-black', isActive);
+            button.classList.toggle('border-tactical-line', !isActive);
+            button.classList.toggle('text-tactical-text', !isActive);
+          }
+        };
+
+        for (const button of filterButtons) {
+          button.addEventListener('click', () => {
+            const filter = button.getAttribute('data-filter') ?? 'all';
+            applyFilter(filter);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,7 +1,19 @@
 import { defineCollection, reference, z } from 'astro:content';
 
 const difficultyEnum = z.enum(['Easy', 'Medium', 'Hard', 'Extreme']);
-const gearCategoryEnum = z.enum(['Motorcycle', 'Luggage', 'Clothing', 'Tech']);
+const gearCategoryEnum = z.enum([
+  'Motorcycle',
+  'Luggage',
+  'Clothing',
+  'Tech',
+  'Bivouac & Campement',
+  'Cuisine & Ravitaillement',
+  'Studio Média & Tech',
+  'Atelier & Assistance',
+  'Garde-robe & Textile',
+  'Hygiène & Pharmacie',
+  'Logistique & Administratif',
+]);
 
 const voyages = defineCollection({
   type: 'content',
@@ -27,7 +39,7 @@ const gear = defineCollection({
     marque: z.string().min(1),
     categorie: gearCategoryEnum,
     description: z.string().min(1),
-    proTip: z.string().min(1),
+    proTip: z.string().optional(),
     specs: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
     image: z.string().min(1)
   })
