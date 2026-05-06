@@ -20,7 +20,7 @@ const specEntries = Object.entries(specs).slice(0, 2);
   data-gear-id={id}
 >
   <!-- ── Gallery View ──────────────────────────────────────────── -->
-  <div class="gallery-view overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical">
+  <div class="gallery-view flex h-[28rem] flex-col overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical md:h-[32rem]">
     <div class="relative">
       <img src={image} alt={titre} class="h-72 w-full object-cover md:h-80" loading="lazy" />
       <div class="absolute right-3 top-3 flex flex-col items-end gap-2">
@@ -35,7 +35,7 @@ const specEntries = Object.entries(specs).slice(0, 2);
       </div>
     </div>
 
-    <div class="space-y-4 p-6">
+    <div class="flex flex-1 flex-col space-y-4 p-6">
       <header>
         <h2 class="font-display text-4xl leading-[0.92] text-tactical-text">
           {titre.toUpperCase()}
