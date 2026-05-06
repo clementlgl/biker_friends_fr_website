@@ -17,6 +17,38 @@ const categories = ['All Gear', ...Array.from(new Set(gearItems.map((item) => it
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>Gear | Biker Friends</title>
+    <script is:inline>
+      function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : savedTheme;
+        
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+
+      window.toggleTheme = function() {
+        const html = document.documentElement;
+        const isDark = html.classList.contains('dark');
+        const newTheme = isDark ? 'light' : 'dark';
+        
+        if (newTheme === 'dark') {
+          html.classList.add('dark');
+        } else {
+          html.classList.remove('dark');
+        }
+        localStorage.setItem('theme', newTheme);
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTheme);
+      } else {
+        initTheme();
+      }
+    </script>
     <style is:global>
       /* Checklist mode – checked item states */
       .gear-item.is-checked .checklist-view {

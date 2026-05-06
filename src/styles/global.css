@@ -4,13 +4,30 @@
 
 @layer base {
 	:root {
+		color-scheme: light;
+		--color-bg: #ffffff;
+		--color-panel: #f6f8fa;
+		--color-panel-soft: #eaeef2;
+		--color-line: #d0d7de;
+		--color-text: #24292e;
+		--color-muted: #57606a;
+	}
+
+	:root.dark {
 		color-scheme: dark;
+		--color-bg: #121212;
+		--color-panel: #1c1f22;
+		--color-panel-soft: #24292e;
+		--color-line: #2b3137;
+		--color-text: #e7ecef;
+		--color-muted: #8b949e;
 	}
 
 	body {
-		background-color: #121212;
-		color: #e7ecef;
+		background-color: var(--color-bg);
+		color: var(--color-text);
 		font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
+		transition: background-color 0.3s ease, color 0.3s ease;
 	}
 
 	h1,

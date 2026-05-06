@@ -7,7 +7,7 @@ const navItems = [
 ];
 ---
 
-<header class="sticky top-0 z-50 border-b border-tactical-line bg-[#121212]/92 backdrop-blur-sm">
+<header class="sticky top-0 z-50 border-b border-tactical-line bg-tactical-bg/92 backdrop-blur-sm transition-colors">
   <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
     <nav aria-label="Primary" class="flex items-center gap-4 sm:gap-7">
       {navItems.map((item) => (
@@ -20,8 +20,51 @@ const navItems = [
       ))}
     </nav>
 
-    <a href="/" class="grid h-8 w-8 place-items-center border border-tactical-line bg-black/40">
-      <span class="font-tech text-[10px] tracking-[0.18em] text-tactical-accent">BF</span>
-    </a>
+    <div class="flex items-center gap-4">
+      <button
+        onclick="window.toggleTheme()"
+        class="grid h-8 w-8 place-items-center border border-tactical-line bg-tactical-panel/40 transition-all hover:bg-tactical-panel/60 hover:border-tactical-accent"
+        aria-label="Toggle theme"
+        title="Toggle light/dark mode"
+      >
+        <svg
+          class="h-4 w-4 text-tactical-text transition-opacity"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <!-- Sun icon -->
+          <circle cx="12" cy="12" r="5" class="sun-circle"></circle>
+          <line x1="12" y1="1" x2="12" y2="3" class="sun-line"></line>
+          <line x1="12" y1="21" x2="12" y2="23" class="sun-line"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" class="sun-line"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" class="sun-line"></line>
+          <line x1="1" y1="12" x2="3" y2="12" class="sun-line"></line>
+          <line x1="21" y1="12" x2="23" y2="12" class="sun-line"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" class="sun-line"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" class="sun-line"></line>
+          
+          <!-- Moon icon -->
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" class="moon-path"></path>
+        </svg>
+      </button>
+
+      <a href="/" class="grid h-8 w-8 place-items-center border border-tactical-line bg-black/40 dark:bg-black/40 light:bg-tactical-line/40 transition-colors">
+        <span class="font-tech text-[10px] tracking-[0.18em] text-tactical-accent">BF</span>
+      </a>
+    </div>
   </div>
 </header>
+
+<style>
+  :root.dark .sun-circle,
+  :root.dark .sun-line {
+    display: none;
+  }
+
+  :root:not(.dark) .moon-path {
+    display: none;
+  }
+</style>
+

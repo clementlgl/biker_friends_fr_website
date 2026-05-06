@@ -1,16 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,ts,tsx,md,mdx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         tactical: {
-          bg: '#121212',
-          panel: '#1c1f22',
-          panelSoft: '#24292e',
-          line: '#2b3137',
-          text: '#e7ecef',
-          muted: '#8b949e',
+          bg: 'var(--color-bg)',
+          panel: 'var(--color-panel)',
+          panelSoft: 'var(--color-panel-soft)',
+          line: 'var(--color-line)',
+          text: 'var(--color-text)',
+          muted: 'var(--color-muted)',
           accent: '#00A3C4',
           accentSoft: '#58d7ec'
         }
