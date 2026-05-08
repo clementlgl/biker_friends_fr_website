@@ -1,0 +1,60 @@
+---
+/**
+ * Bouton de bascule du thème sombre/clair
+ * Utilise des icônes SVG intégrées (Sun/Moon)
+ */
+---
+
+<button
+  id="theme-toggle"
+  class="grid h-8 w-8 place-items-center border border-tactical-line bg-tactical-panel/40 transition-all hover:bg-tactical-panel/60 hover:border-tactical-accent"
+  aria-label="Basculer le thème"
+  title="Basculer clair/sombre"
+  type="button"
+>
+  <svg
+    class="h-4 w-4 text-tactical-text transition-opacity"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    aria-hidden="true"
+  >
+    <!-- Icône Sun -->
+    <circle cx="12" cy="12" r="5" class="sun-circle"></circle>
+    <line x1="12" y1="1" x2="12" y2="3" class="sun-line"></line>
+    <line x1="12" y1="21" x2="12" y2="23" class="sun-line"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" class="sun-line"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" class="sun-line"></line>
+    <line x1="1" y1="12" x2="3" y2="12" class="sun-line"></line>
+    <line x1="21" y1="12" x2="23" y2="12" class="sun-line"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" class="sun-line"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" class="sun-line"></line>
+    
+    <!-- Icône Moon -->
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" class="moon-path"></path>
+  </svg>
+</button>
+
+<script>
+  import { toggleTheme } from '../scripts/theme';
+  
+  const themeToggle = document.getElementById('theme-toggle');
+  
+  if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+  }
+</script>
+
+<style>
+  /* Affiche la lune en mode sombre */
+  :root.dark .sun-circle,
+  :root.dark .sun-line {
+    display: none;
+  }
+
+  /* Affiche le soleil en mode clair */
+  :root:not(.dark) .moon-path {
+    display: none;
+  }
+</style>

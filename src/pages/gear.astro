@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import SiteHeader from '../components/SiteHeader.astro';
 import GearItem from '../components/GearItem.astro';
 import MissionProgressBar from '../components/MissionProgressBar.astro';
+import { INLINE_INIT_SCRIPT } from '../scripts/theme';
 
 const gearItems = (await getCollection('gear')).sort((a, b) => a.data.titre.localeCompare(b.data.titre));
 const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.data.categorie)))];
@@ -17,38 +18,8 @@ const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.d
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>Matériel | Biker Friends</title>
-    <script is:inline>
-      function initTheme() {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = savedTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : savedTheme;
-        
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
-
-      window.toggleTheme = function() {
-        const html = document.documentElement;
-        const isDark = html.classList.contains('dark');
-        const newTheme = isDark ? 'light' : 'dark';
-        
-        if (newTheme === 'dark') {
-          html.classList.add('dark');
-        } else {
-          html.classList.remove('dark');
-        }
-        localStorage.setItem('theme', newTheme);
-      };
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initTheme);
-      } else {
-        initTheme();
-      }
-    </script>
+    <!-- Script inline pour initialiser le thème sans flash -->
+    <script is:inline set:html={INLINE_INIT_SCRIPT}></script>
     <style is:global>
       /* Checklist mode – checked item states */
       .gear-item.is-checked .checklist-view {

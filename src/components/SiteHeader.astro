@@ -1,4 +1,6 @@
 ---
+import ThemeToggle from './ThemeToggle.astro';
+
 const navItems = [
   { label: 'Accueil', href: '/' },
   { label: 'Road Trips', href: '/road-trips' },
@@ -21,34 +23,7 @@ const navItems = [
     </nav>
 
     <div class="flex items-center gap-4">
-      <button
-        onclick="window.toggleTheme()"
-        class="grid h-8 w-8 place-items-center border border-tactical-line bg-tactical-panel/40 transition-all hover:bg-tactical-panel/60 hover:border-tactical-accent"
-        aria-label="Toggle theme"
-        title="Toggle light/dark mode"
-      >
-        <svg
-          class="h-4 w-4 text-tactical-text transition-opacity"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <!-- Sun icon -->
-          <circle cx="12" cy="12" r="5" class="sun-circle"></circle>
-          <line x1="12" y1="1" x2="12" y2="3" class="sun-line"></line>
-          <line x1="12" y1="21" x2="12" y2="23" class="sun-line"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" class="sun-line"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" class="sun-line"></line>
-          <line x1="1" y1="12" x2="3" y2="12" class="sun-line"></line>
-          <line x1="21" y1="12" x2="23" y2="12" class="sun-line"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" class="sun-line"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" class="sun-line"></line>
-          
-          <!-- Moon icon -->
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" class="moon-path"></path>
-        </svg>
-      </button>
+      <ThemeToggle />
 
       <a href="https://www.youtube.com/@biker_friends_fr" target="_blank" rel="noopener noreferrer" class="grid h-8 w-8 place-items-center border border-tactical-line light:bg-tactical-line/40 transition-colors hover:bg-tactical-panel/60 hover:border-tactical-accent" title="Visitez notre chaîne YouTube">
         <svg class="h-4 w-4 text-[#FF0000]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -59,14 +34,4 @@ const navItems = [
   </div>
 </header>
 
-<style>
-  :root.dark .sun-circle,
-  :root.dark .sun-line {
-    display: none;
-  }
-
-  :root:not(.dark) .moon-path {
-    display: none;
-  }
-</style>
 

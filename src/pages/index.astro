@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
+import { INLINE_INIT_SCRIPT } from '../scripts/theme';
 ---
 
 <html lang="en">
@@ -11,38 +12,8 @@ import SiteHeader from '../components/SiteHeader.astro';
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Biker Friends</title>
-		<script is:inline>
-			function initTheme() {
-				const savedTheme = localStorage.getItem('theme') || 'light';
-				const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-				const theme = savedTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : savedTheme;
-				
-				if (theme === 'dark') {
-					document.documentElement.classList.add('dark');
-				} else {
-					document.documentElement.classList.remove('dark');
-				}
-			}
-
-			window.toggleTheme = function() {
-				const html = document.documentElement;
-				const isDark = html.classList.contains('dark');
-				const newTheme = isDark ? 'light' : 'dark';
-				
-				if (newTheme === 'dark') {
-					html.classList.add('dark');
-				} else {
-					html.classList.remove('dark');
-				}
-				localStorage.setItem('theme', newTheme);
-			};
-
-			if (document.readyState === 'loading') {
-				document.addEventListener('DOMContentLoaded', initTheme);
-			} else {
-				initTheme();
-			}
-		</script>
+		<!-- Script inline pour initialiser le thème sans flash -->
+		<script is:inline set:html={INLINE_INIT_SCRIPT}></script>
 	</head>
 	<body>
 		<SiteHeader />

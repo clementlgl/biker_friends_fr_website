@@ -3,8 +3,14 @@
 @import "tailwindcss";
 
 @layer base {
+	/**
+	 * Variables CSS pour le thème clair (défaut)
+	 * Appliquées directement sur :root
+	 */
 	:root {
 		color-scheme: light;
+		
+		/* Couleurs de base */
 		--color-bg: #ffffff;
 		--color-panel: #f6f8fa;
 		--color-panel-soft: #eaeef2;
@@ -13,8 +19,14 @@
 		--color-muted: #57606a;
 	}
 
+	/**
+	 * Variables CSS pour le thème sombre
+	 * Appliquées quand la classe "dark" est présente sur :root
+	 */
 	:root.dark {
 		color-scheme: dark;
+		
+		/* Couleurs de base */
 		--color-bg: #121212;
 		--color-panel: #1c1f22;
 		--color-panel-soft: #24292e;
@@ -23,13 +35,21 @@
 		--color-muted: #8b949e;
 	}
 
+	/**
+	 * Styles globaux avec support des transitions de thème
+	 */
 	body {
 		background-color: var(--color-bg);
 		color: var(--color-text);
 		font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
+		
+		/* Transition fluide lors du changement de thème */
 		transition: background-color 0.3s ease, color 0.3s ease;
 	}
 
+	/**
+	 * Typage des titres avec police d'affichage
+	 */
 	h1,
 	h2,
 	h3,
