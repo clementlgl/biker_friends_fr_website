@@ -4,8 +4,10 @@ import { getCollection } from 'astro:content';
 import SiteHeader from '../components/SiteHeader.astro';
 import GearItem from '../components/GearItem.astro';
 import MissionProgressBar from '../components/MissionProgressBar.astro';
+import { withBase } from '../utils/withBase';
 import { INLINE_INIT_SCRIPT } from '../scripts/theme';
 
+const base = import.meta.env.BASE_URL;
 const gearItems = (await getCollection('gear')).sort((a, b) => a.data.titre.localeCompare(b.data.titre));
 const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.data.categorie)))];
 ---
@@ -13,8 +15,8 @@ const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.d
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>Matériel | Biker Friends</title>
@@ -113,7 +115,7 @@ const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.d
               marque={item.data.marque}
               categorie={item.data.categorie}
               description={item.data.description}
-              image={item.data.image}
+              image={withBase(item.data.image, base)}
               specs={item.data.specs}
             />
           ))}

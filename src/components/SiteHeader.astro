@@ -1,10 +1,12 @@
 ---
 import ThemeToggle from './ThemeToggle.astro';
 
+const base = import.meta.env.BASE_URL;
+
 const navItems = [
-  { label: 'Accueil', href: '/' },
-  { label: 'Road Trips', href: '/road-trips' },
-  { label: 'Matériel', href: '/gear' },
+  { label: 'Accueil', href: base },
+  { label: 'Road Trips', href: `${base}road-trips` },
+  { label: 'Matériel', href: `${base}gear` },
   { label: 'Journal', href: '#journal' }
 ];
 ---

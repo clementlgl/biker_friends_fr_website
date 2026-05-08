@@ -4,7 +4,10 @@ import { getCollection } from 'astro:content';
 import GpxMap from '../../components/GpxMap.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import { distanceFromGpx } from '../../utils/gpxDistance';
+import { withBase } from '../../utils/withBase';
 import { INLINE_INIT_SCRIPT } from '../../scripts/theme';
+
+const base = import.meta.env.BASE_URL;
 
 export async function getStaticPaths() {
   const voyages = await getCollection('voyages');
@@ -21,6 +24,8 @@ interface Props {
 const { voyage } = Astro.props;
 
 const { titre, description, duration, gpxFile, image, youtubeId } = voyage.data;
+const gpxFileWithBase = withBase(gpxFile, base);
+const imageWithBase = withBase(image, base);
 const distance = distanceFromGpx(gpxFile) ?? voyage.data.distance ?? 0;
 
 const voyageCountries: Record<string, string> = {
@@ -29,7 +34,7 @@ const voyageCountries: Record<string, string> = {
   'dalton-highway': 'Alaska'
 };
 
-const heroImage = image;
+const heroImage = imageWithBase;
 const country = voyageCountries[voyage.id] || 'Unknown';
 const stageOneDistance = Math.ceil((distance * 0.52) / 10) * 10;
 const stageTwoDistance = Math.max(0, distance - stageOneDistance);
@@ -40,8 +45,8 @@ const { Content } = await voyage.render();
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="icon" href={`${base}favicon.ico`} />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{titre} | Biker Friends</title>
@@ -59,7 +64,7 @@ const { Content } = await voyage.render();
         <div class="relative mx-auto flex min-h-[30vh] max-w-7xl items-end px-4 pb-10 pt-16 sm:px-6 lg:px-8">
           <div class="grid w-full gap-8 lg:grid-cols-[1fr_340px] lg:items-end">
             <div>
-              <a href="/road-trips" class="font-tech text-[11px] uppercase tracking-[0.2em] text-tactical-accent hover:text-tactical-accentSoft">
+              <a href={`${base}road-trips`} class="font-tech text-[11px] uppercase tracking-[0.2em] text-tactical-accent hover:text-tactical-accentSoft">
                 ← Retour aux expéditions
               </a>
               <h1 class="mt-4 max-w-[12ch] font-display text-5xl uppercase leading-[0.9] sm:text-6xl">{titre}</h1>
@@ -80,7 +85,7 @@ const { Content } = await voyage.render();
 
               <div class="mt-5 flex flex-wrap gap-3">
                 <a
-                  href={gpxFile}
+                  href={gpxFileWithBase}
                   download
                   class="inline-flex items-center gap-2 bg-tactical-accent px-4 py-3 font-tech text-[11px] uppercase tracking-[0.16em] text-[#071014] transition-colors hover:bg-tactical-accentSoft"
                 >
@@ -107,7 +112,7 @@ const { Content } = await voyage.render();
 
       <section class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[300px_1fr] lg:px-8">
         <aside class="h-fit border border-tactical-line bg-tactical-panel p-3">
-          <GpxMap fileUrl={gpxFile} heightClass="h-[500px]" />
+          <GpxMap fileUrl={gpxFileWithBase} heightClass="h-[500px]" />
         </aside>
 
         <div class="space-y-8">
@@ -134,7 +139,7 @@ const { Content } = await voyage.render();
             </div>
             <footer class="flex items-center justify-between px-4 py-3 sm:px-5">
               <span class="border border-tactical-line px-2 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-tactical-muted">Piste facile/modérée</span>
-              <a href={gpxFile} download class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text hover:text-tactical-accent">Télécharger GPX Jour 1</a>
+              <a href={gpxFileWithBase} download class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text hover:text-tactical-accent">Télécharger GPX Jour 1</a>
             </footer>
           </article>
 
@@ -154,7 +159,7 @@ const { Content } = await voyage.render();
             </div>
             <footer class="flex items-center justify-between px-4 py-3 sm:px-5">
               <span class="border border-red-400/40 bg-red-400/10 px-2 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-red-300">Alerte technique</span>
-              <a href={gpxFile} download class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text hover:text-tactical-accent">Télécharger GPX Jour 2</a>
+              <a href={gpxFileWithBase} download class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text hover:text-tactical-accent">Télécharger GPX Jour 2</a>
             </footer>
           </article>
         </div>

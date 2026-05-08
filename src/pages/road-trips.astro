@@ -4,15 +4,11 @@ import { getCollection } from 'astro:content';
 import CardVoyage from '../components/CardVoyage.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { distanceFromGpx } from '../utils/gpxDistance';
+import { withBase } from '../utils/withBase';
 import { INLINE_INIT_SCRIPT } from '../scripts/theme';
 
+const base = import.meta.env.BASE_URL;
 const voyages = (await getCollection('voyages')).sort((a, b) => a.id.localeCompare(b.id));
-
-const voyageImages: Record<string, string> = {
-  'trans-pyrenean-adventure': '/images/road-trips/trans-pyrenean-adventure.svg',
-  'carretera-austral': '/images/road-trips/carretera-austral.svg',
-  'dalton-highway': '/images/road-trips/dalton-highway.svg'
-};
 
 const voyageCountries: Record<string, string> = {
   'trans-pyrenean-adventure': 'Europe',
@@ -24,8 +20,8 @@ const voyageCountries: Record<string, string> = {
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="icon" href={`${base}favicon.ico`} />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>Road Trips | Biker Friends</title>
@@ -48,14 +44,14 @@ const voyageCountries: Record<string, string> = {
         {voyages.map((voyage) => (
           <div class="group relative h-full">
             <CardVoyage
-              image={voyage.data.image}
+              image={withBase(voyage.data.image, base)}
               title={voyage.data.titre}
               country={voyageCountries[voyage.id] || 'Unknown'}
               duration={voyage.data.duration}
               distance={distanceFromGpx(voyage.data.gpxFile) ?? voyage.data.distance ?? 0}
-              gpxUrl={voyage.data.gpxFile}
+              gpxUrl={withBase(voyage.data.gpxFile, base)}
             />
-            <a href={`/road-trips/${voyage.slug}`} class="absolute inset-0 z-10" aria-label={voyage.data.titre}></a>
+            <a href={`${base}road-trips/${voyage.slug}`} class="absolute inset-0 z-10" aria-label={voyage.data.titre}></a>
           </div>
         ))}
       </section>
