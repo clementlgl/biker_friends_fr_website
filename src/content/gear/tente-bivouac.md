@@ -8,5 +8,6 @@ specs:
   poids: 2.1kg
   places: 2
 image: /images/gear/tente.jpg
+url: https://www.amazon.fr/s?k=MSR+tente+bivouac
 ---
 Tente légère et compacte, idéale pour les road trips longue distance.

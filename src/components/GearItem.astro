@@ -8,9 +8,10 @@ export interface Props {
   proTip?: string;
   image: string;
   specs?: Record<string, string | number | boolean>;
+  url?: string;
 }
 
-const { id, titre, marque, categorie, description, image, specs = {} } = Astro.props;
+const { id, titre, marque, categorie, description, image, specs = {}, url } = Astro.props;
 const specEntries = Object.entries(specs).slice(0, 2);
 ---
 
@@ -43,6 +44,21 @@ const specEntries = Object.entries(specs).slice(0, 2);
         <p class="mt-2 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent">{marque.toUpperCase()}</p>
       </header>
       <p class="font-tech text-sm leading-6 text-tactical-muted">{description}</p>
+      {url && (
+        <div class="mt-auto pt-2">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 border border-tactical-accent bg-tactical-accent/10 px-3 py-2 font-tech text-xs uppercase tracking-[0.14em] text-tactical-accent transition-colors hover:bg-tactical-accent hover:text-black"
+          >
+            <span>Voir l'offre</span>
+            <svg class="h-3 w-3" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 10l-3-3m0 0l3-3m-3 3h12" />
+            </svg>
+          </a>
+        </div>
+      )}
     </div>
   </div>
 
@@ -84,6 +100,24 @@ const specEntries = Object.entries(specs).slice(0, 2);
       <span class="hidden shrink-0 font-tech text-[10px] text-tactical-accent/70 sm:block">
         {String(specEntries[0][1])} {specEntries[0][0].replaceAll('_', ' ')}
       </span>
+    )}
+
+    <!-- Purchase link -->
+    {url && (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="shrink-0 text-tactical-accent/70 transition-colors hover:text-tactical-accent"
+        title="Voir l'offre"
+        aria-label={`Voir l'offre pour ${titre}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 2.5H9m4.5 0v4.5m0-4.5L8 8" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5v-8a1 1 0 011-1h4" />
+        </svg>
+      </a>
     )}
   </div>
 </article>

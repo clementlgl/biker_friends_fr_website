@@ -8,8 +8,20 @@ import { withBase } from '../utils/withBase';
 import { INLINE_INIT_SCRIPT } from '../scripts/theme';
 
 const base = import.meta.env.BASE_URL;
-const gearItems = (await getCollection('gear')).sort((a, b) => a.data.titre.localeCompare(b.data.titre));
-const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.data.categorie)))];
+const categoryOrder = ['Administratif', 'Atelier', 'Campement', 'Cuisine', 'Hygiène', 'Tech', 'Vêtements'];
+const gearItems = (await getCollection('gear')).sort((a, b) => {
+  const catA = a.data.categorie;
+  const catB = b.data.categorie;
+  const catIndexA = categoryOrder.indexOf(catA);
+  const catIndexB = categoryOrder.indexOf(catB);
+  
+  if (catIndexA !== catIndexB) {
+    return catIndexA - catIndexB;
+  }
+  return a.data.titre.localeCompare(b.data.titre);
+});
+const uniqueCategories = Array.from(new Set(gearItems.map((item) => item.data.categorie))).sort();
+const categories = ['Tous', ...uniqueCategories];
 ---
 
 <html lang="fr">
@@ -117,6 +129,7 @@ const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.d
               description={item.data.description}
               image={withBase(item.data.image, base)}
               specs={item.data.specs}
+              url={item.data.url}
             />
           ))}
         </div>
@@ -179,6 +192,46 @@ const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.d
           window.dispatchEvent(new CustomEvent('gear:checklist-updated'));
         };
 
+        // ── Reorganize by categories ─────────────────────────────
+        const reorganizeByCategories = () => {
+          const categories = ['Administratif', 'Atelier', 'Campement', 'Cuisine', 'Hygiène', 'Tech', 'Vêtements'];
+          const itemsByCategory = {};
+          
+          categories.forEach(cat => {
+            itemsByCategory[cat] = [];
+          });
+          
+          gearCards.forEach(card => {
+            const category = card.getAttribute('data-category');
+            if (category && itemsByCategory[category]) {
+              itemsByCategory[category].push(card);
+            }
+          });
+          
+          grid.innerHTML = '';
+          categories.forEach(category => {
+            if (itemsByCategory[category].length > 0) {
+              // Create category header
+              const header = document.createElement('div');
+              header.className = 'sticky top-0 z-10 border-b border-t border-tactical-line bg-tactical-panel/80 px-5 py-2 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent backdrop-blur-sm';
+              header.textContent = category;
+              grid.appendChild(header);
+              
+              // Add items for this category
+              itemsByCategory[category].forEach(card => {
+                grid.appendChild(card);
+              });
+            }
+          });
+        };
+
+        const restoreOriginalOrder = () => {
+          grid.innerHTML = '';
+          gearCards.forEach(card => {
+            grid.appendChild(card);
+          });
+        };
+
         // ── Mode switch ──────────────────────────────────────────────
         const setMode = (checklist) => {
           isChecklistMode = checklist;
@@ -200,6 +253,7 @@ const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.d
             resetBtn.classList.remove('hidden');
             if (progressBar) progressBar.classList.remove('hidden');
             gearCards.forEach(refreshCardVisual);
+            reorganizeByCategories();
           } else {
             grid.classList.remove('flex', 'flex-col', 'gap-px');
             grid.classList.add('grid', 'md:grid-cols-2', 'gap-8');
@@ -208,6 +262,7 @@ const categories = ['Tous', ...Array.from(new Set(gearItems.map((item) => item.d
             toggleModeBtn.classList.add('border-tactical-line', 'text-tactical-muted');
             resetBtn.classList.add('hidden');
             if (progressBar) progressBar.classList.add('hidden');
+            restoreOriginalOrder();
           }
 
           toggleModeBtn.setAttribute('aria-pressed', String(checklist));

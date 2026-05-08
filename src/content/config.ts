@@ -39,7 +39,8 @@ const gear = defineCollection({
     description: z.string().min(1),
     proTip: z.string().optional(),
     specs: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
-    image: z.string().min(1)
+    image: z.string().min(1),
+    url: z.string().url().optional()
   })
 });
 
