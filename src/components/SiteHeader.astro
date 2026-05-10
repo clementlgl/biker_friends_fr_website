@@ -7,17 +7,16 @@ const navItems = [
   { label: 'Accueil', href: base },
   { label: 'Road Trips', href: `${base}road-trips` },
   { label: 'Matériel', href: `${base}gear` },
-  { label: 'Journal', href: '#journal' }
 ];
 ---
 
 <header class="sticky top-0 z-50 border-b border-tactical-line bg-tactical-bg/92 backdrop-blur-sm transition-colors">
-  <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
     <nav aria-label="Primary" class="flex items-center gap-4 sm:gap-7">
       {navItems.map((item) => (
         <a
           href={item.href}
-          class="font-display text-sm uppercase tracking-[0.08em] text-tactical-muted transition-colors hover:text-tactical-accent"
+          class="font-display text-base uppercase tracking-[0.1em] text-tactical-muted transition-colors px-3 py-2 rounded-sm hover:text-tactical-accent"
         >
           {item.label}
         </a>
@@ -35,5 +34,30 @@ const navItems = [
     </div>
   </div>
 </header>
+
+<script>
+  // Highlight active nav link: underline + tactical accent color
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      const links = document.querySelectorAll('header nav a');
+      const loc = window.location.href;
+      function normalize(url) {
+        try { return new URL(url, window.location.origin).pathname.replace(/\/$/, '') || '/'; } catch (e) { return url; }
+      }
+      const current = normalize(loc);
+      links.forEach((a) => {
+        const href = a.getAttribute('href') || '';
+        const target = normalize(href);
+        if (target === current || (target === '' && current === '/')) {
+          a.classList.remove('text-tactical-muted');
+          a.classList.add('text-tactical-accent', 'underline', 'decoration-2', 'decoration-tactical-accent');
+          a.setAttribute('aria-current', 'page');
+        } else {
+          a.removeAttribute('aria-current');
+        }
+      });
+    } catch (e) { /* noop */ }
+  });
+</script>
 
 
