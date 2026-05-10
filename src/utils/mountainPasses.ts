@@ -211,7 +211,12 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
 
     // Map Inforoute06 GeoJSON data to MountainPass format
     return data.features
-      .filter((feature: any) => feature.properties?.titre?.toLowerCase().includes('col'))
+      .filter((feature: any) => {
+        const properties = feature.properties || {};
+        const titre = (properties.titre || '').toLowerCase();
+        const code = (properties.code || '').toUpperCase();
+        return titre.includes('col') && code.startsWith('C');
+      })
       .map((feature: any) => {
         const properties = feature.properties || {};
         const [lon, lat] = feature.geometry?.coordinates || [0, 0];
@@ -279,7 +284,12 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
 
     // Map Inforoute74 GeoJSON data to MountainPass format
     return data.features
-      .filter((feature: any) => feature.properties?.titre?.toLowerCase().includes('col'))
+      .filter((feature: any) => {
+        const properties = feature.properties || {};
+        const titre = (properties.titre || '').toLowerCase();
+        const code = (properties.code || '').toUpperCase();
+        return titre.includes('col') && code.startsWith('C');
+      })
       .map((feature: any) => {
         const properties = feature.properties || {};
         const [lon, lat] = feature.geometry?.coordinates || [0, 0];
