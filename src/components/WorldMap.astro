@@ -1,0 +1,180 @@
+---
+// WorldMap.astro - Interactive world map showing visited countries
+// Uses Leaflet.js with CartoDB Dark Matter tiles
+---
+
+<div id="world-map-container" class="relative w-full rounded-lg overflow-hidden border border-slate-700">
+	<div id="world-map" class="h-[500px] w-full bg-slate-900"></div>
+</div>
+
+<!-- Leaflet CSS and JS via CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script define:vars={{ countries: ['FRA', 'ESP', 'ITA', 'MAR', 'CHE', 'NOR'] }}>
+	// Mapping between ISO_A3 codes and country names as they appear in GeoJSON
+	const countryMapping = {
+		'FRA': 'France',
+		'ESP': 'Spain',
+		'ITA': 'Italy',
+		'MAR': 'Morocco',
+		'CHE': 'Switzerland',
+		'NOR': 'Norway',
+	};
+
+	// Create a set of visited country names for faster lookup
+	const visitedCountryNames = new Set(countries.map(code => countryMapping[code]));
+
+	// Wait for Leaflet to be available
+	function initMap() {
+		if (typeof L === 'undefined') {
+			setTimeout(initMap, 100);
+			return;
+		}
+
+		// Leaflet icon fix for default markers
+		delete L.Icon.Default.prototype._getIconUrl;
+		L.Icon.Default.mergeOptions({
+			iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+			iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+			shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+		});
+
+		// Initialize map centered on Europe
+		const map = L.map('world-map').setView([48, 10], 4);
+
+		// Add CartoDB Dark Matter tiles
+		L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+			subdomains: 'abcd',
+			maxZoom: 20,
+		}).addTo(map);
+
+		// Position zoom controls
+		map.zoomControl.setPosition('bottomright');
+
+		// Define styling functions
+		function getCountryStyle(feature) {
+			const isVisited = visitedCountryNames.has(feature.properties.name);
+
+			if (isVisited) {
+				return {
+					fillColor: '#00A3C4', // Cyan accent
+					weight: 2,
+					opacity: 0.9,
+					color: '#00D9E8', // Lighter cyan border
+					fillOpacity: 0.7,
+				};
+			} else {
+				return {
+					fillColor: '#1e293b', // Dark slate
+					weight: 1,
+					opacity: 0.4,
+					color: '#334155', // Subtle border
+					fillOpacity: 0.3,
+				};
+			}
+		}
+
+		// Highlight style on hover
+		function highlightFeature(e) {
+			const layer = e.target;
+			const feature = layer.feature;
+			const isVisited = visitedCountryNames.has(feature.properties.name);
+
+			if (isVisited) {
+				layer.setStyle({
+					weight: 3,
+					opacity: 1,
+					fillOpacity: 0.9,
+					color: '#00FFFF', // Bright cyan on hover
+				});
+			} else {
+				layer.setStyle({
+					weight: 2,
+					opacity: 0.7,
+					fillOpacity: 0.5,
+				});
+			}
+
+			if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+				layer.bringToFront();
+			}
+		}
+
+		// Reset style on mouse out
+		function resetHighlight(e) {
+			geoJsonLayer.resetStyle(e.target);
+		}
+
+		// Handle feature interaction
+		function onEachFeature(feature, layer) {
+			const countryName = feature.properties.name || 'Unknown Country';
+			const isVisited = visitedCountryNames.has(countryName);
+			const status = isVisited ? '✓ Visited' : 'Not visited';
+
+			let popupContent = `<div style="font-size: 0.875rem;">
+				<p style="font-weight: bold; color: #00A3C4; margin: 0;">${countryName}</p>
+				<p style="color: #94a3b8; font-size: 0.75rem; margin: 4px 0 0 0;">${status}</p>
+			</div>`;
+
+			layer.bindPopup(popupContent);
+
+			// Add hover events
+			layer.on('mouseover', highlightFeature);
+			layer.on('mouseout', resetHighlight);
+			layer.on('click', () => {
+				layer.openPopup();
+			});
+		}
+
+		let geoJsonLayer;
+
+		// Fetch GeoJSON data
+		fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+			.then((response) => response.json())
+			.then((data) => {
+				geoJsonLayer = L.geoJSON(data, {
+					style: getCountryStyle,
+					onEachFeature: onEachFeature,
+				}).addTo(map);
+			})
+			.catch((error) => {
+				console.error('Error loading GeoJSON:', error);
+			});
+
+		// Handle window resize for responsiveness
+		window.addEventListener('resize', () => {
+			map.invalidateSize();
+		});
+	}
+
+	// Initialize map when DOM is ready
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initMap);
+	} else {
+		initMap();
+	}
+</script>
+
+<style is:global>
+	/* Dark tactical theme overrides for Leaflet popup */
+	.leaflet-popup-content-wrapper {
+		background-color: #1e293b;
+		border: 1px solid #334155;
+		border-radius: 0.5rem;
+	}
+
+	.leaflet-popup-content {
+		margin: 0;
+	}
+
+	.leaflet-popup-tip {
+		background-color: #1e293b;
+	}
+
+	/* Ensure map is responsive */
+	#world-map {
+		width: 100%;
+	}
+</style>

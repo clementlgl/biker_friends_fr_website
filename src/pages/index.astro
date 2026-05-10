@@ -1,29 +1,253 @@
 ---
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
+import WorldMap from '../components/WorldMap.astro';
 import { INLINE_INIT_SCRIPT } from '../scripts/theme';
+import { getCollection } from 'astro:content';
 
 const base = import.meta.env.BASE_URL;
+
+// Fetch all voyages
+const voyages = await getCollection('voyages');
+
+// Stats data
+const stats = [
+	{
+		icon: 'Globe',
+		value: '12',
+		label: 'PAYS VISITÉS',
+		description: 'Continents explorés'
+	},
+	{
+		icon: 'Gauge',
+		value: '15,847',
+		label: 'KM PARCOURUS',
+		description: 'En deux roues'
+	},
+	{
+		icon: 'Tent',
+		value: '189',
+		label: 'NUITS CAMPING',
+		description: 'Sous les étoiles'
+	},
+	{
+		icon: 'Camera',
+		value: '4.2K',
+		label: 'PHOTOS PRISE',
+		description: 'Moments capturés'
+	}
+];
+
+// Country mapping from slug
+const countryMap: { [key: string]: string } = {
+	'carretera-austral': 'Chile',
+	'corse': 'France',
+	'dalton-highway': 'Alaska',
+	'trans-pyrenean-adventure': 'Spain'
+};
+
+// Mission logs data (from voyages)
+const lastMissions = voyages
+	.map(voyage => ({
+		slug: voyage.slug,
+		title: voyage.data.titre,
+		description: voyage.data.description,
+		image: voyage.data.image || `/images/road-trips/${voyage.slug}.png`,
+		date: voyage.data.date,
+		country: countryMap[voyage.slug] || 'Aventure'
+	}))
+	.sort((a, b) => new Date(b.date) - new Date(a.date))
+	.slice(0, 1);
 ---
 
-<html lang="en">
+<html lang="fr">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
 		<link rel="icon" href={`${base}favicon.ico`} />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Biker Friends</title>
+		<title>Biker Friends - Aventures Moto Premium</title>
 		<!-- Script inline pour initialiser le thème sans flash -->
 		<script is:inline set:html={INLINE_INIT_SCRIPT}></script>
 	</head>
-	<body>
+	<body class="bg-tactical-bg text-slate-100 overflow-x-hidden">
+		<!-- Overlay Grain/Bruit -->
+		<div class="fixed inset-0 pointer-events-none opacity-[0.015] z-0" 
+			style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlUGVydGluTm9pc2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjkiIG51bU9jdGF2ZXM9IjQiIHNlZWQ9IjIiIC8+PC9maWx0ZXI+PC9zdmc+'); background-size: 200px 200px;"></div>
+
 		<SiteHeader />
-		<main id="home" class="mx-auto max-w-3xl px-8 py-12 text-slate-100">
-			<h1 class="font-display text-5xl uppercase tracking-[0.06em] text-tactical-text">Biker Friends</h1>
-			<p class="mt-4 font-tech text-sm text-tactical-muted">
-				Le menu principal est maintenant actif et visible en haut de page.
-			</p>
+
+		<main class="relative z-10">
+			<!-- SECTION 01 : HERO CINÉMATIQUE -->
+			<section class="w-full flex justify-center">
+				<div class="w-full max-w-7xl px-6 mt-8 md:mt-12">
+					<div class="relative mx-auto aspect-video md:v-[100vh] rounded-[2.5rem] overflow-hidden border border-white/10 group">
+						<!-- Image de fond avec dégradé -->
+						<div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10"></div>
+						<img 
+							src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=900&fit=crop" 
+							alt="Moto aventure" 
+							class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+						/>
+
+						<!-- Contenu Hero -->
+						<div class="absolute inset-0 flex flex-col items-center justify-end z-20 pb-8 md:pb-16 px-6">
+							<h1 class="font-display text-4xl md:text-7xl uppercase tracking-[0.08em] text-center leading-tight max-w-4xl mb-4 md:mb-6">
+								Deux roues,<br />Un rêve
+							</h1>
+							<p class="font-tech text-sm md:text-base text-slate-300 text-center max-w-2xl mb-8 md:mb-12">
+								Explorez des road trips légendaires, du matériel premium et des aventures moto autour du globe.
+							</p>
+							<!-- Boutons d'action -->
+							<div class="flex flex-col sm:flex-row gap-4 items-center">
+								<a href="/road-trips" class="px-8 py-3 md:px-10 md:py-4 bg-tactical-accent hover:bg-[#0086b3] text-slate-950 font-tech font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,163,196,0.4)] uppercase text-sm md:text-base tracking-wide">
+									Voir les itinéraires
+									<span class="ml-2">→</span>
+								</a>
+								<button class="px-8 py-3 md:px-10 md:py-4 border border-white/30 hover:border-tactical-accent text-white font-tech font-semibold rounded-xl transition-all duration-300 hover:bg-white/5 backdrop-blur-sm uppercase text-sm md:text-base tracking-wide">
+									Voir le matériel
+									<span class="ml-2">✦</span>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+
+			<!-- SECTION 02 : CARTE -->
+		<section class="w-full flex justify-center">
+			<div class="max-w-7xl px-6 w-full py-20 md:py-32 border-t border-white/5">
+				<div class="mx-auto rounded-[2.5rem] overflow-hidden border border-white/10 h-96 md:h-[450px] shadow-2xl">
+					<WorldMap />
+				</div>
+			</div>
+		</section>
+
+			<!-- SECTION 03 : JOURNAL DE MISSION (Articles) -->
+		<section class="w-full flex justify-center">
+			<div class="max-w-7xl px-6 w-full py-20 md:py-32 border-t border-white/5">
+				<div class="mb-12 md:mb-16">
+					<h2 class="font-display text-4xl md:text-5xl uppercase tracking-[0.06em] mb-4 leading-tight">
+						Derniers journaux de mission
+					</h2>
+					<p class="font-tech text-sm md:text-base text-slate-400 max-w-2xl">
+						Récits de nos dernières expéditions. Routes épiques, panoramas à couper le souffle et souvenirs inoubliables.
+					</p>
+				</div>
+
+				<div class="grid grid-cols-1 gap-6 md:gap-8">
+					{lastMissions.map((mission) => (
+						<a href={`/road-trips/${mission.slug}`} class="group block h-full fade-in-on-scroll">
+							<div class="relative rounded-2xl overflow-hidden h-64 md:h-72 bg-slate-900 border border-white/5 group-hover:border-tactical-accent/50 transition-all duration-500 mb-4">
+								<img 
+									src={mission.image}
+									alt={mission.title}
+									class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+									onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop'"
+								/>
+
+								<div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+								<div class="absolute top-4 right-4 z-20">
+									<span class="inline-block px-3 py-1 font-tech text-xs font-semibold text-tactical-accent bg-tactical-accent/20 border border-tactical-accent/50 rounded-full backdrop-blur-sm">
+										{mission.country}
+									</span>
+								</div>
+							</div>
+
+							<div>
+								<h3 class="font-display text-xl md:text-2xl font-bold group-hover:text-tactical-accent transition-colors duration-300 mb-2 line-clamp-2">
+									{mission.title}
+								</h3>
+								<p class="font-tech text-sm text-slate-400 line-clamp-2 mb-4">
+									{mission.description}
+								</p>
+								<div class="flex items-center justify-between">
+									<span class="font-tech text-xs text-slate-500">
+										{new Date(mission.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' })}
+									</span>
+								</div>
+							</div>
+						</a>
+					))}
+				</div>
+
+			</div>
+		</section>
+
+		<!-- SECTION FOOTER -->
+		<section class="w-full flex justify-center">
+			<div class="max-w-7xl px-6 w-full py-12 md:py-20 border-t border-white/5">
+				<div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+					<p class="font-tech text-xs text-slate-500">© 2024 Biker Friends. Tous droits réservés.</p>
+					<p class="font-tech text-xs text-slate-500">Créé pour les aventuriers & passionnés de moto.</p>
+				</div>
+				</div>
+			</section>
 		</main>
+
+		<!-- Animations & Intersection Observer -->
+		<style>
+			@keyframes fadeInUp {
+				from {
+					opacity: 0;
+					transform: translateY(30px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.fade-in-on-scroll {
+				opacity: 0;
+				animation: fadeInUp 0.6s ease-out forwards;
+				animation-timeline: view();
+				animation-range: entry 0% cover 30%;
+			}
+
+			/* Smooth scroll behavior */
+			html {
+				scroll-behavior: smooth;
+			}
+		</style>
+
+		<script>
+			// Intersection Observer for stat cards fade-in
+			const observer = new IntersectionObserver((entries) => {
+				entries.forEach((entry, index) => {
+					if (entry.isIntersecting) {
+						setTimeout(() => {
+							entry.target.style.opacity = '1';
+							entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+						}, index * 100);
+						observer.unobserve(entry.target);
+					}
+				});
+			}, {
+				threshold: 0.1,
+				rootMargin: '0px 0px -100px 0px'
+			});
+
+			// Observe all stat cards
+			document.querySelectorAll('.stat-card').forEach((card) => {
+				card.style.opacity = '0';
+				observer.observe(card);
+			});
+
+			// Smooth button interactions
+			document.querySelectorAll('button, a[href*="/"]').forEach(el => {
+				el.addEventListener('mouseenter', function() {
+					if (this.classList.contains('transition-all')) {
+						this.style.transform = 'translateY(-2px)';
+					}
+				});
+				el.addEventListener('mouseleave', function() {
+					this.style.transform = 'translateY(0)';
+				});
+			});
+		</script>
 	</body>
 </html>
