@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { getCollection } from 'astro:content';
 import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import GearItem from '../components/GearItem.astro';
 import MissionProgressBar from '../components/MissionProgressBar.astro';
 import { withBase } from '../utils/withBase';
@@ -58,19 +59,15 @@ const categories = ['Tous', ...uniqueCategories];
     <SiteHeader />
     <MissionProgressBar total={gearItems.length} />
 
-    <main class="pb-16">
-      <section class="relative overflow-hidden border-b border-tactical-line">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,163,196,0.15),transparent_42%),radial-gradient(circle_at_80%_0%,rgba(231,236,239,0.1),transparent_38%)]"></div>
-        <div class="absolute inset-0 opacity-30 [background-size:4px_4px] [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)]"></div>
-        <div class="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-          <h1 class="mt-4 max-w-4xl font-display text-6xl leading-[0.88] text-tactical-text">MATÉRIEL</h1>
-          <p class="mt-6 max-w-3xl border-l-2 border-tactical-accent pl-4 font-tech text-sm leading-6 text-tactical-text">
-            Liste de mon materiel que j'enmène sur chaque Road Trip. N'hésite pas à utliser la checklist pour ne rien oublier !
-          </p>
-        </div>
-      </section>
+    <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 pb-16">
+      <header class="mb-12 border-b border-tactical-line pb-6">
+        <h1 class="mt-3 font-display text-5xl leading-[0.9] text-tactical-text">Matériel</h1>
+        <p class="mt-4 max-w-3xl font-tech text-sm leading-6 text-tactical-muted">
+          Liste complète du matériel emporté pour chaque road trip. Utilise la checklist pour préparer ton aventure sans rien oublier !
+        </p>
+      </header>
 
-      <section class="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section class="mt-8">
         <div class="border-y border-tactical-line py-4">
           <div class="flex flex-wrap items-center justify-between gap-4">
             <div id="gear-filters" class="flex flex-wrap gap-2" role="tablist" aria-label="Gear categories">
@@ -135,6 +132,8 @@ const categories = ['Tous', ...uniqueCategories];
         </div>
       </section>
     </main>
+
+    <SiteFooter />
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {

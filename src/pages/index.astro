@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import WorldMap from '../components/WorldMap.astro';
 import { INLINE_INIT_SCRIPT } from '../scripts/theme';
 import { getCollection } from 'astro:content';
@@ -67,7 +68,7 @@ const lastMissions = voyages
 		<link rel="icon" href={`${base}favicon.ico`} />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Biker Friends - Aventures Moto Premium</title>
+		<title>Biker Friends - Accueil</title>
 		<!-- Script inline pour initialiser le thème sans flash -->
 		<script is:inline set:html={INLINE_INIT_SCRIPT}></script>
 	</head>
@@ -102,90 +103,22 @@ const lastMissions = voyages
 							<!-- Boutons d'action -->
 							<div class="flex flex-col sm:flex-row gap-4 items-center">
 								<a href="/road-trips" class="px-8 py-3 md:px-10 md:py-4 bg-tactical-accent hover:bg-[#0086b3] text-slate-950 font-tech font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,163,196,0.4)] uppercase text-sm md:text-base tracking-wide">
-									Voir les itinéraires
+									Road Trips
 									<span class="ml-2">→</span>
 								</a>
-								<button class="px-8 py-3 md:px-10 md:py-4 border border-white/30 hover:border-tactical-accent text-white font-tech font-semibold rounded-xl transition-all duration-300 hover:bg-white/5 backdrop-blur-sm uppercase text-sm md:text-base tracking-wide">
-									Voir le matériel
+								<a href="/gear" class="px-8 py-3 md:px-10 md:py-4 border border-white/30 hover:border-tactical-accent text-white font-tech font-semibold rounded-xl transition-all duration-300 hover:bg-white/5 backdrop-blur-sm uppercase text-sm md:text-base tracking-wide">
+									Matériel
 									<span class="ml-2">✦</span>
-								</button>
+								</a>
 							</div>
 						</div>
 					</div>
 				</div>
 			</section>
 
-
-			<!-- SECTION 02 : CARTE -->
-		<section class="w-full flex justify-center">
-			<div class="max-w-7xl px-6 w-full py-20 md:py-32 border-t border-white/5">
-				<div class="mx-auto rounded-[2.5rem] overflow-hidden border border-white/10 h-96 md:h-[450px] shadow-2xl">
-					<WorldMap />
-				</div>
-			</div>
-		</section>
-
-			<!-- SECTION 03 : JOURNAL DE MISSION (Articles) -->
-		<section class="w-full flex justify-center">
-			<div class="max-w-7xl px-6 w-full py-20 md:py-32 border-t border-white/5">
-				<div class="mb-12 md:mb-16">
-					<h2 class="font-display text-4xl md:text-5xl uppercase tracking-[0.06em] mb-4 leading-tight">
-						Derniers journaux de mission
-					</h2>
-					<p class="font-tech text-sm md:text-base text-slate-400 max-w-2xl">
-						Récits de nos dernières expéditions. Routes épiques, panoramas à couper le souffle et souvenirs inoubliables.
-					</p>
-				</div>
-
-				<div class="grid grid-cols-1 gap-6 md:gap-8">
-					{lastMissions.map((mission) => (
-						<a href={`/road-trips/${mission.slug}`} class="group block h-full fade-in-on-scroll">
-							<div class="relative rounded-2xl overflow-hidden h-64 md:h-72 bg-slate-900 border border-white/5 group-hover:border-tactical-accent/50 transition-all duration-500 mb-4">
-								<img 
-									src={mission.image}
-									alt={mission.title}
-									class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-									onerror="this.src='https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop'"
-								/>
-
-								<div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-								<div class="absolute top-4 right-4 z-20">
-									<span class="inline-block px-3 py-1 font-tech text-xs font-semibold text-tactical-accent bg-tactical-accent/20 border border-tactical-accent/50 rounded-full backdrop-blur-sm">
-										{mission.country}
-									</span>
-								</div>
-							</div>
-
-							<div>
-								<h3 class="font-display text-xl md:text-2xl font-bold group-hover:text-tactical-accent transition-colors duration-300 mb-2 line-clamp-2">
-									{mission.title}
-								</h3>
-								<p class="font-tech text-sm text-slate-400 line-clamp-2 mb-4">
-									{mission.description}
-								</p>
-								<div class="flex items-center justify-between">
-									<span class="font-tech text-xs text-slate-500">
-										{new Date(mission.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' })}
-									</span>
-								</div>
-							</div>
-						</a>
-					))}
-				</div>
-
-			</div>
-		</section>
-
 		<!-- SECTION FOOTER -->
 		<section class="w-full flex justify-center">
-			<div class="max-w-7xl px-6 w-full py-12 md:py-20 border-t border-white/5">
-				<div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-					<p class="font-tech text-xs text-slate-500">© 2024 Biker Friends. Tous droits réservés.</p>
-					<p class="font-tech text-xs text-slate-500">Créé pour les aventuriers & passionnés de moto.</p>
-				</div>
-				</div>
-			</section>
+				<SiteFooter />
 		</main>
 
 		<!-- Animations & Intersection Observer -->
