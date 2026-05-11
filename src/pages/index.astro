@@ -11,54 +11,6 @@ const base = import.meta.env.BASE_URL;
 // Fetch all voyages
 const voyages = await getCollection('voyages');
 
-// Stats data
-const stats = [
-	{
-		icon: 'Globe',
-		value: '12',
-		label: 'PAYS VISITÉS',
-		description: 'Continents explorés'
-	},
-	{
-		icon: 'Gauge',
-		value: '15,847',
-		label: 'KM PARCOURUS',
-		description: 'En deux roues'
-	},
-	{
-		icon: 'Tent',
-		value: '189',
-		label: 'NUITS CAMPING',
-		description: 'Sous les étoiles'
-	},
-	{
-		icon: 'Camera',
-		value: '4.2K',
-		label: 'PHOTOS PRISE',
-		description: 'Moments capturés'
-	}
-];
-
-// Country mapping from slug
-const countryMap: { [key: string]: string } = {
-	'carretera-austral': 'Chile',
-	'corse': 'France',
-	'dalton-highway': 'Alaska',
-	'trans-pyrenean-adventure': 'Spain'
-};
-
-// Mission logs data (from voyages)
-const lastMissions = voyages
-	.map(voyage => ({
-		slug: voyage.slug,
-		title: voyage.data.titre,
-		description: voyage.data.description,
-		image: voyage.data.image || `/images/road-trips/${voyage.slug}.png`,
-		date: voyage.data.date,
-		country: countryMap[voyage.slug] || 'Aventure'
-	}))
-	.sort((a, b) => new Date(b.date) - new Date(a.date))
-	.slice(0, 1);
 ---
 
 <html lang="fr">
@@ -102,11 +54,11 @@ const lastMissions = voyages
 							</p>
 							<!-- Boutons d'action -->
 							<div class="flex flex-col sm:flex-row gap-4 items-center">
-								<a href="/road-trips" class="px-8 py-3 md:px-10 md:py-4 bg-tactical-accent hover:bg-[#0086b3] text-slate-950 font-tech font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,163,196,0.4)] uppercase text-sm md:text-base tracking-wide">
+								<a href={`${base.replace(/\/$/, '')}/road-trips`} class="px-8 py-3 md:px-10 md:py-4 bg-tactical-accent hover:bg-[#0086b3] text-slate-950 font-tech font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,163,196,0.4)] uppercase text-sm md:text-base tracking-wide">
 									Road Trips
 									<span class="ml-2">→</span>
 								</a>
-								<a href="/gear" class="px-8 py-3 md:px-10 md:py-4 border border-white/30 hover:border-tactical-accent text-white font-tech font-semibold rounded-xl transition-all duration-300 hover:bg-white/5 backdrop-blur-sm uppercase text-sm md:text-base tracking-wide">
+								<a href={`${base.replace(/\/$/, '')}/gear`} class="px-8 py-3 md:px-10 md:py-4 border border-white/30 hover:border-tactical-accent text-white font-tech font-semibold rounded-xl transition-all duration-300 hover:bg-white/5 backdrop-blur-sm uppercase text-sm md:text-base tracking-wide">
 									Matériel
 									<span class="ml-2">✦</span>
 								</a>
@@ -146,41 +98,6 @@ const lastMissions = voyages
 				scroll-behavior: smooth;
 			}
 		</style>
-
-		<script>
-			// Intersection Observer for stat cards fade-in
-			const observer = new IntersectionObserver((entries) => {
-				entries.forEach((entry, index) => {
-					if (entry.isIntersecting) {
-						setTimeout(() => {
-							entry.target.style.opacity = '1';
-							entry.target.style.animation = 'fadeInUp 0.6s ease-out';
-						}, index * 100);
-						observer.unobserve(entry.target);
-					}
-				});
-			}, {
-				threshold: 0.1,
-				rootMargin: '0px 0px -100px 0px'
-			});
-
-			// Observe all stat cards
-			document.querySelectorAll('.stat-card').forEach((card) => {
-				card.style.opacity = '0';
-				observer.observe(card);
-			});
-
-			// Smooth button interactions
-			document.querySelectorAll('button, a[href*="/"]').forEach(el => {
-				el.addEventListener('mouseenter', function() {
-					if (this.classList.contains('transition-all')) {
-						this.style.transform = 'translateY(-2px)';
-					}
-				});
-				el.addEventListener('mouseleave', function() {
-					this.style.transform = 'translateY(0)';
-				});
-			});
 		</script>
 	</body>
 </html>
