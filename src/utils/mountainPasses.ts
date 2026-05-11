@@ -455,7 +455,8 @@ export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
     formData.append('action', '374');
     formData.append('protect', '1');
 
-    const url = 'https://inforoute.le64.fr/mod_turbolead/mod/inforoute/index.php?action=374&protect=1';
+    const targetUrl = 'https://inforoute.le64.fr/mod_turbolead/mod/inforoute/index.php?action=374&protect=1';
+    const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: {
