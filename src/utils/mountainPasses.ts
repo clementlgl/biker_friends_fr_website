@@ -455,7 +455,7 @@ export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
     formData.append('action', '374');
     formData.append('protect', '1');
 
-    const response = await fetch('https://inforoute.le64.fr/mod_turbolead/mod/inforoute/index.php', {
+    const response = await fetch('https://inforoute.le64.fr/mod_turbolead/mod/inforoute/index.php?action=374&protect=1', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
