@@ -14,6 +14,7 @@ export interface MountainPass {
   updated?: Date;
   source?: string;
   coordinates?: [number, number]; // [latitude, longitude]
+  department?: string; // two-digit department code, e.g. '73'
 }
 
 /**
@@ -100,6 +101,7 @@ export async function fetchSavoieRoutePasses(): Promise<MountainPass[]> {
         name: passName,
         altitude: pass.altitude || PASS_ALTITUDES[passName] || 0,
         region: 'Alpes - Savoie',
+        department: '73',
         status: STATUS_MAP[pass.Etat] || 'ALERT',
         updated: new Date(),
         source: 'savoie-route.fr',
@@ -167,6 +169,7 @@ export async function fetchHautesAlpesPasses(): Promise<MountainPass[]> {
         name: properties.nomCol || 'Unknown Pass',
         altitude: properties.altitude || 0,
         region: `Hautes-Alpes - ${properties.nomZone || 'Unknown'}`,
+        department: '05',
         status: HAUTES_ALPES_STATUS_MAP[properties.etatCol] || 'ALERT',
         updated: new Date(),
         source: 'inforoute.hautes-alpes.fr',
@@ -237,10 +240,27 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
         return {
           id: `inforoute06-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
           name: properties.titre || 'Unknown Pass',
-          altitude: properties.altitude || 0,
-          region: `Alpes-Maritimes - Inforoute06`,
+          altitude: ((): number => {
+            if (properties.altitude) {
+              const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''));
+              if (!Number.isNaN(n)) return n;
+            }
+
+            const title = properties.titre || '';
+            // Try patterns like "- 810m" or "810 m"
+            const match = title.match(/-\s*([\d\s,.]+)m/i) || title.match(/([\d\s,.]+)m/i);
+            if (match && match[1]) {
+              const cleaned = match[1].replace(/[^\d]/g, '');
+              const parsed = parseInt(cleaned, 10);
+              if (!Number.isNaN(parsed)) return parsed;
+            }
+
+            return 0;
+          })(),
+          region: `Alpes-Maritimes`,
+          department: '06',
           status: status,
-          conditions: properties.code ? [properties.code] : undefined,
+        //   conditions: properties.code ? [properties.code] : undefined,
           updated: new Date(),
           source: 'inforoutes06.fr',
           coordinates: [lat, lon] as [number, number]
@@ -288,7 +308,7 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
         const properties = feature.properties || {};
         const titre = (properties.titre || '').toLowerCase();
         const code = (properties.code || '').toUpperCase();
-        return titre.includes('col') && code.startsWith('C');
+        return titre.includes('col ') && code.startsWith('C');
       })
       .map((feature: any) => {
         const properties = feature.properties || {};
@@ -310,10 +330,28 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
         return {
           id: `inforoute74-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
           name: properties.titre || 'Unknown Pass',
-          altitude: properties.altitude || 0,
-          region: `Haute-Savoie - Inforoute74`,
+          // Parse altitude from properties.altitude if present, otherwise try to extract from the title
+          altitude: ((): number => {
+            if (properties.altitude) {
+              const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''));
+              if (!Number.isNaN(n)) return n;
+            }
+
+            const title = properties.titre || '';
+            // Try patterns like "- 810m" or "810 m"
+            const match = title.match(/-\s*([\d\s,.]+)m/i) || title.match(/([\d\s,.]+)m/i);
+            if (match && match[1]) {
+              const cleaned = match[1].replace(/[^\d]/g, '');
+              const parsed = parseInt(cleaned, 10);
+              if (!Number.isNaN(parsed)) return parsed;
+            }
+
+            return 0;
+          })(),
+          region: `Haute-Savoie`,
+          department: '74',
           status: status,
-          conditions: properties.code ? [properties.code] : undefined,
+        //   conditions: properties.code ? [properties.code] : undefined,
           updated: new Date(),
           source: 'inforoute74.fr',
           coordinates: [lat, lon] as [number, number]
@@ -324,16 +362,535 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
     return [];
   }
 }
+export async function fetchInforoute04Passes(): Promise<MountainPass[]> {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('action', '374');
+    formData.append('protect', '1');
+
+    const response = await fetch('https://www.inforoute04.fr/mod_turbolead/mod/inforoute/index.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString()
+    });
+
+    if (!response.ok) {
+      console.error('Inforoute04 API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+
+    if (!data.features || !Array.isArray(data.features)) {
+      console.error('Unexpected Inforoute04 API response format');
+      return [];
+    }
+
+    // Map Inforoute04 GeoJSON data to MountainPass format
+    return data.features
+      .filter((feature: any) => {
+        const properties = feature.properties || {};
+        const titre = (properties.titre || '').toLowerCase();
+        const code = (properties.code || '').toUpperCase();
+        return titre.includes('col ') && code.startsWith('C');
+      })
+      .map((feature: any) => {
+        const properties = feature.properties || {};
+        const [lon, lat] = feature.geometry?.coordinates || [0, 0];
+        
+        // Parse status from code (e.g., "C14 Ouvert") or url_icone
+        let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT';
+        const codeStr = properties.code?.toLowerCase() || '';
+        const iconUrl = properties.url_icone?.toLowerCase() || '';
+        
+        // Try to match status from code property
+        for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
+          if (codeStr.includes(key) || iconUrl.includes(key)) {
+            status = value;
+            break;
+          }
+        }
+        
+        return {
+          id: `inforoute04-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
+          name: properties.titre || 'Unknown Pass',
+          // Parse altitude from properties.altitude if present, otherwise try to extract from the title
+          altitude: ((): number => {
+            if (properties.altitude) {
+              const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''));
+              if (!Number.isNaN(n)) return n;
+            }
+
+            const title = properties.titre || '';
+            // Try patterns like "- 810m" or "810 m"
+            const match = title.match(/-\s*([\d\s,.]+)m/i) || title.match(/([\d\s,.]+)m/i);
+            if (match && match[1]) {
+              const cleaned = match[1].replace(/[^\d]/g, '');
+              const parsed = parseInt(cleaned, 10);
+              if (!Number.isNaN(parsed)) return parsed;
+            }
+
+            return 0;
+          })(),
+          region: `Alpes-de-Haute-Provence`,
+          department: '04',
+          status: status,
+        //   conditions: properties.code ? [properties.code] : undefined,
+          updated: new Date(),
+          source: 'inforoute04.fr',
+          coordinates: [lat, lon] as [number, number]
+        };
+      });
+  } catch (error) {
+    console.error('Failed to fetch Inforoute04 passes:', error);
+    return [];
+  }
+}
+
+export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('action', '374');
+    formData.append('protect', '1');
+
+    const response = await fetch('https://inforoute.le64.fr/mod_turbolead/mod/inforoute/index.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString()
+    });
+
+    if (!response.ok) {
+      console.error('Inforoute64 API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+
+    if (!data.features || !Array.isArray(data.features)) {
+      console.error('Unexpected Inforoute64 API response format');
+      return [];
+    }
+
+    return data.features
+      .filter((feature: any) => {
+        const properties = feature.properties || {};
+        const titre = (properties.titre || '').toLowerCase();
+        const code = (properties.code || '').toUpperCase();
+        return titre.includes('col ') && code.startsWith('C');
+      })
+      .map((feature: any) => {
+        const properties = feature.properties || {};
+        const [lon, lat] = feature.geometry?.coordinates || [0, 0];
+
+        let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT';
+        const codeStr = properties.code?.toLowerCase() || '';
+        const iconUrl = properties.url_icone?.toLowerCase() || '';
+
+        for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
+          if (codeStr.includes(key) || iconUrl.includes(key)) {
+            status = value;
+            break;
+          }
+        }
+
+        return {
+          id: `inforoute64-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
+          name: properties.titre || 'Unknown Pass',
+          // Parse altitude from properties.altitude if present, otherwise try to extract from the title
+          altitude: ((): number => {
+            if (properties.altitude) {
+              const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''));
+              if (!Number.isNaN(n)) return n;
+            }
+
+            const title = properties.titre || '';
+            const match = title.match(/-\s*([\d\s,.]+)m/i) || title.match(/([\d\s,.]+)m/i);
+            if (match && match[1]) {
+              const cleaned = match[1].replace(/[^\d]/g, '');
+              const parsed = parseInt(cleaned, 10);
+              if (!Number.isNaN(parsed)) return parsed;
+            }
+
+            return 0;
+          })(),
+          region: `Pyrénées-Atlantiques`,
+          department: '64',
+          status: status,
+          updated: new Date(),
+          source: 'inforoute.le64.fr',
+          coordinates: [lat, lon] as [number, number]
+        };
+      });
+  } catch (error) {
+    console.error('Failed to fetch Inforoute64 passes:', error);
+    return [];
+  }
+}
+ 
+export async function fetchInforoute66Passes(): Promise<MountainPass[]> {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('action', '374');
+    formData.append('protect', '1');
+
+    const response = await fetch('https://www.inforoute66.fr/mod_turbolead/mod/inforoute/index.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString()
+    });
+
+    if (!response.ok) {
+      console.error('Inforoute66 API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+
+    if (!data.features || !Array.isArray(data.features)) {
+      console.error('Unexpected Inforoute66 API response format');
+      return [];
+    }
+
+    return data.features
+      .filter((feature: any) => {
+        const properties = feature.properties || {};
+        const titre = (properties.titre || '').toLowerCase();
+        const code = (properties.code || '').toUpperCase();
+        return titre.includes('col ') && code.startsWith('C');
+      })
+      .map((feature: any) => {
+        const properties = feature.properties || {};
+        const [lon, lat] = feature.geometry?.coordinates || [0, 0];
+
+        let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT';
+        const codeStr = properties.code?.toLowerCase() || '';
+        const iconUrl = properties.url_icone?.toLowerCase() || '';
+
+        for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
+          if (codeStr.includes(key) || iconUrl.includes(key)) {
+            status = value;
+            break;
+          }
+        }
+
+        return {
+          id: `inforoute66-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
+          name: properties.titre || 'Unknown Pass',
+          altitude: ((): number => {
+            if (properties.altitude) {
+              const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''));
+              if (!Number.isNaN(n)) return n;
+            }
+
+            const title = properties.titre || '';
+            const match = title.match(/-\s*([\d\s,.]+)m/i) || title.match(/([\d\s,.]+)m/i);
+            if (match && match[1]) {
+              const cleaned = match[1].replace(/[^\d]/g, '');
+              const parsed = parseInt(cleaned, 10);
+              if (!Number.isNaN(parsed)) return parsed;
+            }
+
+            for (const [k, v] of Object.entries(PASS_ALTITUDES)) {
+              if (String(properties.titre || '').toLowerCase().includes(String(k).toLowerCase())) return v;
+            }
+            return 0;
+          })(),
+          region: `Pyrénées-Orientales`,
+          department: '66',
+          status: status,
+          updated: new Date(),
+          source: 'inforoute66.fr',
+          coordinates: [lat, lon] as [number, number]
+        };
+      });
+  } catch (error) {
+    console.error('Failed to fetch Inforoute66 passes:', error);
+    return [];
+  }
+}
+export async function fetchInforoute09Passes(): Promise<MountainPass[]> {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('action', '374');
+    formData.append('protect', '1');
+
+    const response = await fetch('https://www.inforoute09.fr/mod_turbolead/mod/inforoute/index.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString()
+    });
+
+    if (!response.ok) {
+      console.error('Inforoute09 API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+
+    if (!data.features || !Array.isArray(data.features)) {
+      console.error('Unexpected Inforoute09 API response format');
+      return [];
+    }
+
+    return data.features
+      .filter((feature: any) => {
+        const properties = feature.properties || {};
+        const titre = (properties.titre || '').toLowerCase();
+        const code = (properties.code || '').toUpperCase();
+        return titre.includes('col ') && code.startsWith('C');
+      })
+      .map((feature: any) => {
+        const properties = feature.properties || {};
+        const [lon, lat] = feature.geometry?.coordinates || [0, 0];
+
+        let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT';
+        const codeStr = properties.code?.toLowerCase() || '';
+        const iconUrl = properties.url_icone?.toLowerCase() || '';
+
+        for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
+          if (codeStr.includes(key) || iconUrl.includes(key)) {
+            status = value;
+            break;
+          }
+        }
+
+        return {
+          id: `inforoute09-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
+          name: properties.titre || 'Unknown Pass',
+          altitude: ((): number => {
+            if (properties.altitude) {
+              const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''));
+              if (!Number.isNaN(n)) return n;
+            }
+
+            const title = properties.titre || '';
+            const match = title.match(/-\s*([\d\s,.]+)m/i) || title.match(/([\d\s,.]+)m/i);
+            if (match && match[1]) {
+              const cleaned = match[1].replace(/[^\d]/g, '');
+              const parsed = parseInt(cleaned, 10);
+              if (!Number.isNaN(parsed)) return parsed;
+            }
+
+            return 0;
+          })(),
+          region: `Ariège`,
+          department: '09',
+          status: status,
+          updated: new Date(),
+          source: 'inforoute09.fr',
+          coordinates: [lat, lon] as [number, number]
+        };
+      });
+  } catch (error) {
+    console.error('Failed to fetch Inforoute09 passes:', error);
+    return [];
+  }
+}
+
+export async function fetchInforoute31Passes(): Promise<MountainPass[]> {
+  try {
+    const formData = new URLSearchParams();
+    formData.append('action', '374');
+    formData.append('protect', '1');
+
+    const response = await fetch('https://www.inforoute31.fr/mod_turbolead/mod/inforoute/index.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString()
+    });
+
+    if (!response.ok) {
+      console.error('Inforoute31 API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+
+    if (!data.features || !Array.isArray(data.features)) {
+      console.error('Unexpected Inforoute31 API response format');
+      return [];
+    }
+
+    return data.features
+      .filter((feature: any) => {
+        const properties = feature.properties || {};
+        const titre = (properties.titre || '').toLowerCase();
+        const code = (properties.code || '').toUpperCase();
+        return titre.includes('col ') && code.startsWith('C');
+      })
+      .map((feature: any) => {
+        const properties = feature.properties || {};
+        const [lon, lat] = feature.geometry?.coordinates || [0, 0];
+
+        let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT';
+        const codeStr = properties.code?.toLowerCase() || '';
+        const iconUrl = properties.url_icone?.toLowerCase() || '';
+
+        for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
+          if (codeStr.includes(key) || iconUrl.includes(key)) {
+            status = value;
+            break;
+          }
+        }
+
+        return {
+          id: `inforoute31-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
+          name: properties.titre || 'Unknown Pass',
+          altitude: ((): number => {
+            if (properties.altitude) {
+              const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''));
+              if (!Number.isNaN(n)) return n;
+            }
+
+            const title = properties.titre || '';
+            const match = title.match(/-\s*([\d\s,.]+)m/i) || title.match(/([\d\s,.]+)m/i);
+            if (match && match[1]) {
+              const cleaned = match[1].replace(/[^\d]/g, '');
+              const parsed = parseInt(cleaned, 10);
+              if (!Number.isNaN(parsed)) return parsed;
+            }
+
+            return 0;
+          })(),
+          region: `Haute-Garonne`,
+          department: '31',
+          status: status,
+          updated: new Date(),
+          source: 'inforoute31.fr',
+          coordinates: [lat, lon] as [number, number]
+        };
+      });
+  } catch (error) {
+    console.error('Failed to fetch Inforoute31 passes:', error);
+    return [];
+  }
+}
+
+export async function fetchInforouteHaPyPasses(): Promise<MountainPass[]> {
+  try {
+    const url = 'https://inforoute.ha-py.fr/myd/proxy.php?cluster=&tifid=&type=30.02&cc=12345';
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error('Inforoute Ha-Py API error:', response.status);
+      return [];
+    }
+    const data = await response.json();
+
+    // Normalise: l'API peut renvoyer un tableau ou un objet { OI: [...] }
+    let items: any[] = [];
+    if (Array.isArray(data)) items = data;
+    else if (data && Array.isArray((data as any).OI)) items = (data as any).OI;
+    else {
+      for (const k of Object.keys(data || {})) {
+        if (Array.isArray((data as any)[k])) {
+          items = (data as any)[k];
+          break;
+        }
+      }
+    }
+
+    return items
+      .filter((it: any) => {
+        const title = String(it.titre || it.lib || it.libelle || '');
+        return title.toLowerCase().includes('col');
+      })
+      .map((it: any) => {
+        const titleRaw = String(it.titre || it.lib || it.libelle || '');
+        // Nettoyages basiques (FERMETURE / codes de route en tête)
+        let candidate = titleRaw.replace(/\bFERMETURE\b/gi, '').replace(/\bFERM[ÉE]\b/gi, '').replace(/\bFERME\b/gi, '').trim();
+        candidate = candidate.replace(/^[A-Z]+\d+\s+/i, '').trim();
+        const colMatch = candidate.match(/col[^,;:-]*/i);
+        const name = (colMatch ? colMatch[0].trim().replace(/\s+/g, ' ') : candidate || titleRaw);
+
+        // Altitude: champ direct > extraction depuis le titre > lookup dans PASS_ALTITUDES
+        let altitude = 0;
+        if (it.altitude) {
+          const n = Number(String(it.altitude).replace(/[^\d.-]/g, ''));
+          if (!Number.isNaN(n)) altitude = n;
+        }
+        if (!altitude) {
+          const m = titleRaw.match(/-\s*([\d\s,.]+)m/i) || titleRaw.match(/([\d\s,.]+)m/i);
+          if (m && m[1]) {
+            const parsed = parseInt(m[1].replace(/[^\d]/g, ''), 10);
+            if (!Number.isNaN(parsed)) altitude = parsed;
+          }
+        }
+        if (!altitude) {
+          for (const [k, v] of Object.entries(PASS_ALTITUDES)) {
+            if (name.toLowerCase().includes(k.toLowerCase())) { altitude = v; break; }
+          }
+        }
+
+        // Statut heuristique depuis titre / soustitre / catégorie
+        let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT';
+        const lower = (titleRaw + ' ' + String(it.soustitre || it.sous_titre || '')).toLowerCase();
+        if (lower.includes('ferme') || lower.includes('fermeture') || lower.includes('fermet')) status = 'CLOSED';
+        else if (lower.includes('ouvert') || lower.includes('ouverture')) status = 'OPEN';
+        else if (lower.includes('partiel') || lower.includes('alternat') || lower.includes('sens unique') || lower.includes('une voie')) status = 'PARTIAL';
+
+        const lat = it.lat ? Number(String(it.lat).replace(',', '.')) : 0;
+        const lon = it.lng ? Number(String(it.lng).replace(',', '.')) : 0;
+        const updated = it.date_debut ? new Date(it.date_debut) : new Date();
+
+        return {
+          id: `inforoute-hapy-${String(it.id || it.pid || name).replace(/\s+/g, '-').toLowerCase()}`,
+          name,
+          altitude,
+          region: `Hautes-Pyrénées`,
+          department: '65',
+          status,
+          updated,
+          source: 'inforoute.ha-py.fr',
+          coordinates: [lat || 0, lon || 0] as [number, number]
+        } as MountainPass;
+      });
+  } catch (error) {
+    console.error('Failed to fetch Inforoute Ha-Py passes:', error);
+    return [];
+  }
+}
+
 export async function getAllMountainPasses(): Promise<MountainPass[]> {
   try {
     const passes = await Promise.all([
-      fetchSavoieRoutePasses(),
-      fetchHautesAlpesPasses(),
-      fetchInforoute06Passes(),
-      fetchInforoute74Passes(),
+      fetchSavoieRoutePasses(), // 73
+      fetchInforoute74Passes(), // 74
+      fetchInforoute04Passes(), // 04
+      fetchInforouteLE64Passes(), // 64
+      fetchInforoute66Passes(), // 66
+      fetchInforouteHaPyPasses(), // 65
+      fetchInforoute09Passes(), // 09
+    //   fetchInforoute31Passes(), // 31
+      fetchInforoute06Passes(), // 06
+      fetchHautesAlpesPasses(), // 05
     ]);
 
-    return passes.flat().sort((a, b) => a.name.localeCompare(b.name));
+    const merged = passes.flat();
+
+    // Sort by department (numeric), then by region, then by name
+    merged.sort((a, b) => {
+      const da = a.department ? parseInt(String(a.department).padStart(2, '0'), 10) : Number.POSITIVE_INFINITY;
+      const db = b.department ? parseInt(String(b.department).padStart(2, '0'), 10) : Number.POSITIVE_INFINITY;
+      if (da !== db) return da - db;
+
+      const ra = a.region || '';
+      const rb = b.region || '';
+      if (ra !== rb) return ra.localeCompare(rb);
+
+      return (a.name || '').localeCompare(b.name || '');
+    });
+
+    return merged;
   } catch (error) {
     console.error('Failed to fetch mountain passes:', error);
     return [];
@@ -345,7 +902,22 @@ export async function getAllMountainPasses(): Promise<MountainPass[]> {
  */
 export function filterByRegion(passes: MountainPass[], region: string): MountainPass[] {
   if (region === 'ALL') return passes;
+  // If the filter looks like a department code (e.g. '73' or '4'), use department filtering
+  const deptMatch = String(region).match(/^\d{1,2}$/);
+  if (deptMatch) {
+    const code = String(region).padStart(2, '0');
+    return filterByDepartment(passes, code);
+  }
   return passes.filter(pass => pass.region.includes(region));
+}
+
+/**
+ * Filter passes by department code (two-digit string, e.g. '73')
+ */
+export function filterByDepartment(passes: MountainPass[], department: string): MountainPass[] {
+  if (!department || department === 'ALL') return passes;
+  const code = String(department).padStart(2, '0');
+  return passes.filter(pass => String(pass.department || '').padStart(2, '0') === code);
 }
 
 /**

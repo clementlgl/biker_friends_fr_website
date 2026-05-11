@@ -19,8 +19,10 @@ const stats = {
   alert: allPasses.filter(p => p.status === 'ALERT' || p.status === 'PARTIAL').length,
 };
 
-// Extract unique regions
-const regions = ['ALL', ...Array.from(new Set(allPasses.map(p => p.region.split(' - ')[1] || p.region)))];
+// Extract unique departments
+const deptSet = Array.from(new Set(allPasses.map(p => p.department || '').filter(Boolean)));
+deptSet.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+const departments = ['ALL', ...deptSet];
 ---
 
 <html lang="fr">
@@ -120,18 +122,18 @@ const regions = ['ALL', ...Array.from(new Set(allPasses.map(p => p.region.split(
         </div>
       </section>
 
-      <!-- Filters section -->
+      <!-- Filters section (by department) -->
       <section class="mb-8 flex flex-wrap items-center gap-3">
-        {regions.map(region => (
+        {departments.map(dept => (
           <button 
-            data-region={region}
+            data-department={dept}
             class={`px-4 py-2 font-tech text-xs uppercase font-semibold rounded transition-colors ${
-              region === 'ALL' 
+              dept === 'ALL' 
                 ? 'bg-tactical-accent text-white' 
                 : 'border border-tactical-line text-tactical-text hover:border-tactical-accent'
             }`}
           >
-            {region === 'ALL' ? 'Tous les régions' : region}
+            {dept === 'ALL' ? 'Tous les départements' : dept}
           </button>
         ))}
       </section>
@@ -166,6 +168,15 @@ const regions = ['ALL', ...Array.from(new Set(allPasses.map(p => p.region.split(
       const passesData = typeof passesDataStr === 'string' ? JSON.parse(passesDataStr) : passesDataStr;
 
       let mapMarkerSvg = null;
+      let leafletMap = null;
+      let markersLayer = null;
+
+      const statusColors = {
+        'OPEN': '#007a21',
+        'CLOSED': '#EF4444',
+        'ALERT': '#F59E0B',
+        'PARTIAL': '#F59E0B'
+      };
 
       async function initializeMap() {
         if (mapInitialized) return;
@@ -210,64 +221,69 @@ const regions = ['ALL', ...Array.from(new Set(allPasses.map(p => p.region.split(
         const mapElement = document.getElementById('mountain-passes-map');
         if (!mapElement || !L) return;
 
-        const map = L.map(mapElement).setView([45.5, 6.0], 8);
+        leafletMap = L.map(mapElement).setView([45.5, 6.0], 8);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 19
-        }).addTo(map);
+        }).addTo(leafletMap);
 
-        const statusColors = {
-          'OPEN': '#007a21',
-          'CLOSED': '#EF4444',
-          'ALERT': '#F59E0B',
-          'PARTIAL': '#F59E0B'
-        };
+        markersLayer = L.layerGroup().addTo(leafletMap);
 
-        passesData.forEach((pass) => {
-          if (pass.coordinates) {
-            const [lat, lng] = pass.coordinates;
-            const color = statusColors[pass.status] || '#8b949e';
+        // Render initial markers for all passes
+        renderMarkers(passesData);
+      }
 
-            // Always use the map marker SVG (recolor based on status) or fallback to base-aware image
-            let markerHtml = '';
-            if (mapMarkerSvg) {
-              const colored = mapMarkerSvg.replace(/fill=\"[^\"]*\"/g, `fill=\"${color}\"`).replace(/<svg/, '<svg style="width:26px;height:26px;">');
-              markerHtml = `<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;">${colored}</div>`;
-            } else {
-              markerHtml = '<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;">' +
-                '<img src="' + BASE + 'images/map_marker.svg" alt="marker" style="width:26px;height:26px;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35));" />' +
-                '</div>';
-            }
+      function renderMarkers(filteredPasses) {
+        if (!window.L || !leafletMap || !markersLayer) return;
 
-            const marker = L.marker([lat, lng], {
-              icon: L.divIcon({
-                html: markerHtml,
-                iconSize: [32, 32],
-                className: 'leaflet-marker'
-              })
-            });
+        markersLayer.clearLayers();
 
-            marker.bindPopup(`
-              <div style="font-size: 12px;">
-                <p style="font-weight: bold; margin: 0 0 4px 0;">${pass.name}</p>
-                <p style="color: #666; margin: 0 0 4px 0;">${pass.altitude}m</p>
-                <p style="font-weight: bold; margin: 0; color: ${color}">${pass.status}</p>
-              </div>
-            `);
+        const coords = [];
 
-            marker.addTo(map);
+        const BASE = typeof basePath === 'string' ? basePath : '/';
+
+        filteredPasses.forEach((pass) => {
+          if (!pass.coordinates) return;
+          const [lat, lng] = pass.coordinates;
+          const color = statusColors[pass.status] || '#8b949e';
+
+          // Build marker HTML (recolor svg if available)
+          let markerHtml = '';
+          if (mapMarkerSvg) {
+            const colored = mapMarkerSvg.replace(/fill=\"[^\"]*\"/g, `fill=\"${color}\"`).replace(/<svg/, '<svg style="width:26px;height:26px;">');
+            markerHtml = `<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;">${colored}</div>`;
+          } else {
+            markerHtml = '<div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;">' +
+              '<img src="' + BASE + 'images/map_marker.svg" alt="marker" style="width:26px;height:26px;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35));" />' +
+              '</div>';
           }
+
+          const marker = window.L.marker([lat, lng], {
+            icon: window.L.divIcon({
+              html: markerHtml,
+              iconSize: [32, 32],
+              className: 'leaflet-marker'
+            })
+          });
+
+          marker.bindPopup(`
+            <div style="font-size: 12px;">
+              <p style="font-weight: bold; margin: 0 0 4px 0;">${pass.name}</p>
+              <p style="color: #666; margin: 0 0 4px 0;">${pass.altitude}m</p>
+              <p style="font-weight: bold; margin: 0; color: ${color}">${pass.status}</p>
+            </div>
+          `);
+
+          markersLayer.addLayer(marker);
+
+          coords.push(pass.coordinates);
         });
 
-        // Fit to bounds
-        const coordinates = passesData
-          .filter(p => p.coordinates)
-          .map(p => p.coordinates);
-        
-        if (coordinates.length > 0) {
-          const bounds = L.latLngBounds(coordinates);
-          map.fitBounds(bounds, { padding: [50, 50] });
+        // Fit to bounds of filtered markers
+        if (coords.length > 0) {
+          const bounds = window.L.latLngBounds(coords);
+          leafletMap.fitBounds(bounds, { padding: [50, 50] });
         }
       }
 
@@ -288,40 +304,68 @@ const regions = ['ALL', ...Array.from(new Set(allPasses.map(p => p.region.split(
         document.getElementById('view-map').classList.remove('border', 'border-tactical-line', 'text-tactical-text');
         document.getElementById('view-grid').classList.remove('bg-tactical-accent', 'text-white');
         document.getElementById('view-grid').classList.add('border', 'border-tactical-line', 'text-tactical-text');
-        
+
         // Initialize map when view is shown
         setTimeout(initializeMap, 100);
       });
 
-      // Update last update time
+      // Update last update time (guarded in case element is not present)
       const now = new Date();
-      document.getElementById('last-update').textContent = now.toLocaleTimeString('fr-FR', {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const lastUpdateEl = document.getElementById('last-update');
+      if (lastUpdateEl) {
+        lastUpdateEl.textContent = now.toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
 
-      // Filter passes by search
+      // Filter passes by search + department
       const searchInput = document.getElementById('search-input');
-      const passes = document.querySelectorAll('[data-pass-name]');
+      const passes = Array.from(document.querySelectorAll('[data-pass-name]'));
+
+      let currentDepartment = 'ALL';
+      let currentQuery = '';
+
+      function applyFilters() {
+        const normalizedQuery = currentQuery.trim().toLowerCase();
+        passes.forEach(passEl => {
+          const name = passEl.getAttribute('data-pass-name')?.toLowerCase() || '';
+          const deptAttr = passEl.getAttribute('data-pass-department') || '';
+          const matchesQuery = normalizedQuery === '' || name.includes(normalizedQuery);
+          const matchesDept = currentDepartment === 'ALL' || deptAttr === currentDepartment;
+          passEl.style.display = (matchesQuery && matchesDept) ? '' : 'none';
+        });
+
+        // Update map markers if map initialized
+        if (mapInitialized) {
+          const filteredForMap = passesData.filter(pass => {
+            const dept = pass.department || '';
+            const matchesDept = currentDepartment === 'ALL' || dept === currentDepartment;
+            const matchesQuery = currentQuery.trim() === '' || pass.name.toLowerCase().includes(currentQuery.trim().toLowerCase());
+            return matchesDept && matchesQuery;
+          });
+          renderMarkers(filteredForMap);
+        }
+      }
 
       searchInput?.addEventListener('input', (e) => {
-        const query = (e.target).value.toLowerCase();
-        passes.forEach(pass => {
-          const name = pass.getAttribute('data-pass-name')?.toLowerCase() || '';
-          pass.style.display = name.includes(query) ? '' : 'none';
-        });
+        currentQuery = (e.target).value || '';
+        applyFilters();
       });
 
-      // Filter by region
-      const regionButtons = document.querySelectorAll('[data-region]');
-      regionButtons.forEach(button => {
+      // Filter by department
+      const deptButtons = Array.from(document.querySelectorAll('[data-department]'));
+      deptButtons.forEach(button => {
         button.addEventListener('click', () => {
-          regionButtons.forEach(b => {
+          deptButtons.forEach(b => {
             b.classList.remove('bg-tactical-accent', 'text-white');
             b.classList.add('border', 'border-tactical-line', 'text-tactical-text');
           });
           button.classList.add('bg-tactical-accent', 'text-white');
           button.classList.remove('border', 'border-tactical-line', 'text-tactical-text');
+
+          currentDepartment = button.getAttribute('data-department') || 'ALL';
+          applyFilters();
         });
       });
     </script>

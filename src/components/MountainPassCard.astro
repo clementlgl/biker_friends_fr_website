@@ -42,7 +42,7 @@ const lastUpdate = pass.updated ? new Date(pass.updated).toLocaleTimeString('fr-
 }) : '--:--';
 ---
 
-<div class="group relative border border-tactical-line rounded-lg bg-tactical-panel p-5 transition-all hover:border-tactical-accent hover:shadow-accent overflow-hidden" data-pass-name={pass.name}>
+<div class="group relative border border-tactical-line rounded-lg bg-tactical-panel p-5 transition-all hover:border-tactical-accent hover:shadow-accent overflow-hidden" data-pass-name={pass.name} data-pass-region={pass.region} data-pass-department={pass.department}>
   <!-- Top section with status badge -->
   <div class="flex items-start justify-between gap-3 mb-4">
     <div class="flex-1">
