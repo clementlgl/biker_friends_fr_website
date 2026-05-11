@@ -455,23 +455,35 @@ export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
     formData.append('action', '374');
     formData.append('protect', '1');
 
-    const response = await fetch('https://inforoute.le64.fr/mod_turbolead/mod/inforoute/index.php?action=374&protect=1', {
-      method: 'POST',
+    const url = 'https://inforoute.le64.fr/mod_turbolead/mod/inforoute/index.php?action=374&protect=1';
+    const response = await fetch(url, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString()
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36',
+        'Accept-Encoding': 'gzip, deflate, br'
+      }
     });
 
+    console.log('Fetching Inforoute64 passes, response status:', response.status);
+
+    const text = await response.text();
     if (!response.ok) {
-      console.error('Inforoute64 API error:', response.status);
+      console.error('Inforoute64 API error:', response.status, 'response:', String(text).slice(0, 2000));
       return [];
     }
 
-    const data = await response.json();
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      console.error('Inforoute64 JSON parse error:', err, 'responseText:', String(text).slice(0, 2000));
+      return [];
+    }
 
     if (!data.features || !Array.isArray(data.features)) {
-      console.error('Unexpected Inforoute64 API response format');
+      console.error('Unexpected Inforoute64 API response format:', Object.keys(data || {}).slice(0, 20), 'sample:', String(text).slice(0, 2000));
       return [];
     }
 
