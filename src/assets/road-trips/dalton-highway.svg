@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Dalton Highway">
+  <defs>
+    <linearGradient id="sky-dalton" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0f18"/>
+      <stop offset="50%" stop-color="#08090f"/>
+      <stop offset="100%" stop-color="#030405"/>
+    </linearGradient>
+    <linearGradient id="ridge-dalton" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1f2530"/>
+      <stop offset="100%" stop-color="#090a0d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky-dalton)"/>
+  <path d="M0 680 L200 580 L400 650 L600 540 L800 680 L1000 590 L1200 700 L1400 600 L1600 680 L1600 1000 L0 1000 Z" fill="url(#ridge-dalton)"/>
+  <path d="M0 800 L1600 700" fill="none" stroke="#14161a" stroke-width="40" stroke-linecap="round"/>
+  <path d="M20 800 L1580 700" fill="none" stroke="#00A3C4" stroke-width="3" stroke-dasharray="8 16" stroke-linecap="round"/>
+  <circle cx="800" cy="700" r="12" fill="#00A3C4" opacity="0.6"/>
+</svg>

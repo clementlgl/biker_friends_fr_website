@@ -44,7 +44,7 @@ const voyageCountries: Record<string, string> = {
         {voyages.map((voyage) => (
           <div class="group relative h-full">
             <CardVoyage
-              image={withBase(voyage.data.image, base)}
+              image={voyage.data.image}
               title={voyage.data.titre}
               country={voyageCountries[voyage.id] || 'Unknown'}
               duration={voyage.data.duration}

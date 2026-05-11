@@ -1,18 +1,27 @@
 ---
+/**
+ * GearItem - Composant optimisé pour les images
+ * Utilise le composant <Image/> d'Astro pour conversion WebP au build
+ */
+
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
 export interface Props {
   id: string;
   titre: string;
-  marque: string;
+  marque?: string;
   categorie: string;
   description: string;
   proTip?: string;
-  image: string;
+  image: string | ImageMetadata;
   specs?: Record<string, string | number | boolean>;
   url?: string;
 }
 
 const { id, titre, marque, categorie, description, image, specs = {}, url } = Astro.props;
-const specEntries = Object.entries(specs).slice(0, 2);
+const specEntries = specs ? Object.entries(specs).slice(0, 2) : [];
+const isAssetImage = typeof image !== 'string';
 ---
 
 <article
@@ -22,8 +31,31 @@ const specEntries = Object.entries(specs).slice(0, 2);
 >
   <!-- ── Gallery View ──────────────────────────────────────────── -->
   <div class="gallery-view flex h-[28rem] flex-col overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical md:h-[32rem]">
-    <div class="relative">
-      <img src={image} alt={titre} class="h-72 w-full object-cover md:h-80" loading="lazy" />
+    <!-- Image container with aspect ratio to prevent layout shift -->
+    <div class="relative w-full overflow-hidden bg-tactical-panel/50" style="aspect-ratio: 16/9">
+      {isAssetImage ? (
+        <Image
+          src={image as ImageMetadata}
+          alt={titre}
+          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          loading="lazy"
+          decoding="async"
+          quality="high"
+          widths={[700, 900]}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+      ) : (
+        <picture>
+          <source srcset={image.replace(/\.(jpg|jpeg|png)$/i, '.webp')} type="image/webp" />
+          <img
+            src={image}
+            alt={titre}
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+      )}
       <div class="absolute right-3 top-3 flex flex-col items-end gap-2">
         <span class="border border-tactical-line bg-black/45 px-3 py-1 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text">
           {categorie}
@@ -41,7 +73,9 @@ const specEntries = Object.entries(specs).slice(0, 2);
         <h2 class="font-display text-4xl leading-[0.92] text-tactical-text">
           {titre.toUpperCase()}
         </h2>
-        <p class="mt-2 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent">{marque.toUpperCase()}</p>
+        {marque && (
+          <p class="mt-2 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent">{marque.toUpperCase()}</p>
+        )}
       </header>
       <p class="font-tech text-sm leading-6 text-tactical-muted">{description}</p>
       {url && (

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Carretera Austral">
+  <defs>
+    <linearGradient id="sky-austral" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1a1f"/>
+      <stop offset="50%" stop-color="#0d0f13"/>
+      <stop offset="100%" stop-color="#050506"/>
+    </linearGradient>
+    <linearGradient id="ridge-austral" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a3135"/>
+      <stop offset="100%" stop-color="#0f1215"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky-austral)"/>
+  <path d="M0 550 L180 420 L340 500 L520 380 L680 510 L840 420 L1040 560 L1200 480 L1400 580 L1600 500 L1600 1000 L0 1000 Z" fill="url(#ridge-austral)"/>
+  <path d="M0 650 C220 600, 380 720, 560 650 C790 570, 990 760, 1180 680 C1360 610, 1480 710, 1600 650" fill="none" stroke="#1f2528" stroke-width="36" stroke-linecap="round"/>
+  <path d="M20 650 C230 605, 380 720, 560 650 C790 572, 990 760, 1180 680 C1365 612, 1480 710, 1585 650" fill="none" stroke="#00A3C4" stroke-width="4" stroke-dasharray="12 14" stroke-linecap="round"/>
+</svg>

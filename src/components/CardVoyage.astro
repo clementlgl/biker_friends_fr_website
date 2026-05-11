@@ -1,14 +1,20 @@
 ---
+/**
+ * CardVoyage - Composant optimisé pour les images
+ * Utilise le composant <Image/> d'Astro pour conversion WebP au build
+ */
+
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 
 interface Props {
-  image: string;
+  image: string | ImageMetadata;
   title: string;
   country?: string;
   duration: number;
   distance: number;
   gpxUrl?: string;
 }
-
 
 const {
   image,
@@ -19,16 +25,35 @@ const {
   gpxUrl = '#'
 } = Astro.props;
 
+const isAssetImage = typeof image !== 'string';
 ---
 
 <article class="group relative flex flex-col h-full overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical transition-transform duration-300 hover:-translate-y-0.5">
-  <div class="relative flex-1 min-h-[430px] w-full overflow-hidden">
-    <img
-      src={image}
-      alt={title}
-      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-      loading="lazy"
-    />
+  <!-- Image container with aspect ratio to prevent layout shift -->
+  <div class="relative flex-1 w-full overflow-hidden" style="aspect-ratio: 16/10">
+    {isAssetImage ? (
+      <Image
+        src={image as ImageMetadata}
+        alt={title}
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        loading="lazy"
+        decoding="async"
+        quality="high"
+        widths={[500, 700, 900, 1100]}
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+      />
+    ) : (
+      <picture>
+        <source srcset={image.replace(/\.(jpg|jpeg|png)$/i, '.webp')} type="image/webp" />
+        <img
+          src={image}
+          alt={title}
+          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
+    )}
     <div class="absolute inset-0 bg-tactical-overlay"></div>
 
     <div class="absolute left-4 top-4 flex items-center gap-2">

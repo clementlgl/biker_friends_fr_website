@@ -1,0 +1,153 @@
+---
+import { Image } from 'astro:assets';
+
+export interface Props {
+  id: string;
+  titre: string;
+  marque?: string;
+  categorie: string;
+  description: string;
+  proTip?: string;
+  image: string | ImageMetadata;
+  specs?: Record<string, string | number | boolean>;
+  url?: string;
+  loading?: 'eager' | 'lazy';
+}
+
+// Import de l'image Astro si disponible, sinon utiliser le chemin string
+import type { ImageMetadata } from 'astro';
+
+const { id, titre, marque, categorie, description, image, specs = {}, url, loading = 'lazy' } = Astro.props;
+const specEntries = specs ? Object.entries(specs).slice(0, 2) : [];
+---
+
+<article
+  class="gear-item transition-all duration-200"
+  data-category={categorie}
+  data-gear-id={id}
+>
+  <!-- ── Gallery View ──────────────────────────────────────────── -->
+  <div class="gallery-view flex h-[28rem] flex-col overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical md:h-[32rem]">
+    <!-- Image container with aspect ratio to prevent layout shift -->
+    <div class="relative w-full overflow-hidden bg-tactical-panel/50" style="aspect-ratio: 16/9">
+      {typeof image === 'string' ? (
+        <img
+          src={image}
+          alt={titre}
+          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          loading={loading}
+          decoding="async"
+          fetchpriority={loading === 'eager' ? 'high' : 'auto'}
+        />
+      ) : (
+        <Image
+          src={image}
+          alt={titre}
+          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          loading={loading}
+          decoding="async"
+          format="webp"
+          quality="high"
+          widths={[400, 600, 800]}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+      )}
+      <div class="absolute right-3 top-3 flex flex-col items-end gap-2">
+        <span class="border border-tactical-line bg-black/45 px-3 py-1 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text">
+          {categorie}
+        </span>
+        {specEntries.map(([key, value]) => (
+          <span class="border border-tactical-accent/50 bg-[#0d171c]/80 px-3 py-1 font-tech text-[11px] uppercase tracking-[0.14em] text-tactical-accentSoft">
+            {String(value)} {key.replaceAll('_', ' ')}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <div class="flex flex-1 flex-col space-y-4 p-6">
+      <header>
+        <h2 class="font-display text-4xl leading-[0.92] text-tactical-text">
+          {titre.toUpperCase()}
+        </h2>
+        {marque && (
+          <p class="mt-2 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent">{marque.toUpperCase()}</p>
+        )}
+      </header>
+      <p class="font-tech text-sm leading-6 text-tactical-muted">{description}</p>
+      {url && (
+        <div class="mt-auto pt-2">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 border border-tactical-accent bg-tactical-accent/10 px-3 py-2 font-tech text-xs uppercase tracking-[0.14em] text-tactical-accent transition-colors hover:bg-tactical-accent hover:text-black"
+          >
+            <span>Voir l'offre</span>
+            <svg class="h-3 w-3" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 10l-3-3m0 0l3-3m-3 3h12" />
+            </svg>
+          </a>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- ── Checklist View ────────────────────────────────────────── -->
+  <div
+    class="checklist-view cursor-pointer select-none items-center gap-3 border border-tactical-line bg-tactical-panel/30 px-5 py-3 transition-colors duration-150 hover:bg-tactical-panel/70"
+    style="display:none"
+    role="checkbox"
+    aria-checked="false"
+    tabindex="0"
+  >
+    <!-- Checkbox indicator -->
+    <div class="checkbox-indicator flex h-5 w-5 shrink-0 items-center justify-center border border-tactical-line transition-all duration-150">
+      <svg
+        class="checkmark-icon h-3 w-3 text-tactical-accent"
+        fill="none"
+        viewBox="0 0 12 12"
+        stroke="currentColor"
+        stroke-width="2.5"
+        style="display:none"
+        aria-hidden="true"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M1.5 6L5 9.5L10.5 2.5" />
+      </svg>
+    </div>
+
+    <!-- Title -->
+    <span class="item-title-text flex-1 truncate font-tech text-sm text-tactical-text transition-all duration-150">
+      {titre}
+    </span>
+
+    <!-- Category badge -->
+    <span class="shrink-0 border border-tactical-line px-2 py-0.5 font-tech text-[10px] uppercase tracking-[0.14em] text-tactical-muted">
+      {categorie}
+    </span>
+
+    <!-- First spec value -->
+    {specEntries.length > 0 && (
+      <span class="hidden shrink-0 font-tech text-[10px] text-tactical-accent/70 sm:block">
+        {String(specEntries[0][1])} {specEntries[0][0].replaceAll('_', ' ')}
+      </span>
+    )}
+
+    <!-- Purchase link -->
+    {url && (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="shrink-0 text-tactical-accent/70 transition-colors hover:text-tactical-accent"
+        title="Voir l'offre"
+        aria-label={`Voir l'offre pour ${titre}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 2.5H9m4.5 0v4.5m0-4.5L8 8" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5v-8a1 1 0 011-1h4" />
+        </svg>
+      </a>
+    )}
+  </div>
+</article>
