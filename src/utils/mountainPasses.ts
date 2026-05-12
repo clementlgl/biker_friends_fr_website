@@ -911,32 +911,10 @@ export async function getAllMountainPasses(): Promise<MountainPass[]> {
 }
 
 /**
- * Filter passes by region
- */
-export function filterByRegion(passes: MountainPass[], region: string): MountainPass[] {
-  if (region === 'ALL') return passes;
-  // If the filter looks like a department code (e.g. '73' or '4'), use department filtering
-  const deptMatch = String(region).match(/^\d{1,2}$/);
-  if (deptMatch) {
-    const code = String(region).padStart(2, '0');
-    return filterByDepartment(passes, code);
-  }
-  return passes.filter(pass => pass.region.includes(region));
-}
-
-/**
  * Filter passes by department code (two-digit string, e.g. '73')
  */
 export function filterByDepartment(passes: MountainPass[], department: string): MountainPass[] {
   if (!department || department === 'ALL') return passes;
   const code = String(department).padStart(2, '0');
   return passes.filter(pass => String(pass.department || '').padStart(2, '0') === code);
-}
-
-/**
- * Filter passes by status
- */
-export function filterByStatus(passes: MountainPass[], status: string): MountainPass[] {
-  if (status === 'ALL') return passes;
-  return passes.filter(pass => pass.status === status);
 }
