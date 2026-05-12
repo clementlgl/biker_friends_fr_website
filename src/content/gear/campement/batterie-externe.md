@@ -4,7 +4,7 @@ titre: Batterie externe
 marque: Ugreen
 description: Recharge tous les appareils électroniques.
 specs:
-  capacite: 20000mAh
+  capacité: 20000mAh
 url: https://amzn.eu/d/0dYJbWS3
 image: ../../../assets/gear/batterie-externe.png
 ---

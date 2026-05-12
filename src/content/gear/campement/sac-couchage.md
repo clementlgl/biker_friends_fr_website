@@ -12,5 +12,5 @@ Le sac de couchage est un élément essentiel pour passer une bonne nuit en camp
 
 Si tu prévois de camper dans des endroits où les températures peuvent descendre en dessous de 10°C, il est recommandé d'opter pour un sac de couchage avec une température de confort de 0°C ou moins. Sinon prends un sac de couchage avec une température de confort de 10°C, qui sera suffisant pour les nuits d'été.
 
-Par expéreince personnel mon duvet 10° à été juste les nuits en montagne aux mois de juin et juillet. Arriver à 5° il a fallu mettre des vêtements supplémentaires pour ne pas avoir froid et ce même avec le drap de soie.
+Par expérience personnelle, mon duvet 10° a été juste les nuits en montagne aux mois de juin et juillet. Arriver à 5° il a fallu mettre des vêtements supplémentaires pour ne pas avoir froid et ce même avec le drap de soie.
 
