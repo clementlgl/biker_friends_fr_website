@@ -4,11 +4,13 @@ import SiteFooter from '../components/SiteFooter.astro';
 import GearItem from '../components/GearItem.astro';
 import MissionProgressBar from '../components/MissionProgressBar.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCategoryOrder } from '../utils/getCategoryOrder';
 import { getGearItems } from '../utils/loadGearItems';
 
-const categoryOrder = getCategoryOrder();
-const gearItems = (await getGearItems()).sort((a, b) => {
+const gearItems = await getGearItems();
+const categoryOrder = Array.from(new Set(gearItems.map((item) => item.data.categorie))).sort((a, b) =>
+  a.localeCompare(b, 'fr', { sensitivity: 'base' })
+);
+const sortedGearItems = [...gearItems].sort((a, b) => {
   const catA = a.data.categorie;
   const catB = b.data.categorie;
   const catIndexA = categoryOrder.indexOf(catA);
@@ -19,8 +21,7 @@ const gearItems = (await getGearItems()).sort((a, b) => {
   }
   return a.data.titre.localeCompare(b.data.titre);
 });
-const uniqueCategories = Array.from(new Set(gearItems.map((item) => item.data.categorie))).sort();
-const categories = ['Tous', ...uniqueCategories];
+const categories = ['Tous', ...categoryOrder];
 ---
 
 <BaseLayout
@@ -110,9 +111,10 @@ const categories = ['Tous', ...uniqueCategories];
         </div>
 
         <div id="gear-grid" class="mt-8 grid gap-8 md:grid-cols-2">
-          {gearItems.map((item) => (
+          {sortedGearItems.map((item) => (
             <GearItem
               id={item.data.id}
+              slug={item.slug}
               titre={item.data.titre}
               marque={item.data.marque}
               categorie={item.data.categorie}
@@ -136,6 +138,7 @@ const categories = ['Tous', ...uniqueCategories];
 
         // ── State ────────────────────────────────────────────────────
         let isChecklistMode = false;
+        let activeFilter = 'all';
         let checkedItems = new Set<string>(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'));
 
         // ── DOM refs ─────────────────────────────────────────────────
@@ -154,12 +157,8 @@ const categories = ['Tous', ...uniqueCategories];
         const GALLERY_ICON   = `<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="0.5"/><rect x="9" y="1" width="6" height="6" rx="0.5"/><rect x="1" y="9" width="6" height="6" rx="0.5"/><rect x="9" y="9" width="6" height="6" rx="0.5"/></svg>`;
 
         // ── Filter ───────────────────────────────────────────────────
-        const applyFilter = (filter: string) => {
-          for (const card of gearCards) {
-            const cat = card.getAttribute('data-category');
-            card.classList.toggle('hidden', filter !== 'all' && cat !== filter);
-          }
-          for (const btn of filterButtons) {
+        const updateFilterButtons = (filter: string) => {
+            for (const btn of filterButtons) {
             const active = btn.getAttribute('data-filter') === filter;
             btn.setAttribute('aria-pressed', String(active));
             btn.classList.toggle('border-tactical-accent', active);
@@ -167,6 +166,28 @@ const categories = ['Tous', ...uniqueCategories];
             btn.classList.toggle('text-black', active);
             btn.classList.toggle('border-tactical-line', !active);
             btn.classList.toggle('text-tactical-text', !active);
+          }
+        };
+
+        const updateCardFilterVisibility = (filter: string) => {
+          for (const card of gearCards) {
+            const cat = card.getAttribute('data-category');
+            card.classList.toggle('hidden', filter !== 'all' && cat !== filter);
+          }
+        };
+
+        const syncCardModeVisibility = () => {
+          for (const card of gearCards) {
+            const galleryView = card.querySelector<HTMLElement>('.gallery-view');
+            const checklistView = card.querySelector<HTMLElement>('.checklist-view');
+
+            if (galleryView) {
+              galleryView.style.display = isChecklistMode ? 'none' : '';
+            }
+
+            if (checklistView) {
+              checklistView.style.display = isChecklistMode ? 'flex' : 'none';
+            }
           }
         };
 
@@ -200,6 +221,9 @@ const categories = ['Tous', ...uniqueCategories];
           });
           
           gearCards.forEach(card => {
+            if (card.classList.contains('hidden')) {
+              return;
+            }
             const category = card.getAttribute('data-category');
             if (category && itemsByCategory[category]) {
               itemsByCategory[category].push(card);
@@ -230,17 +254,24 @@ const categories = ['Tous', ...uniqueCategories];
           });
         };
 
+        const applyFilter = (filter: string) => {
+          activeFilter = filter;
+          updateCardFilterVisibility(filter);
+          updateFilterButtons(filter);
+
+          if (isChecklistMode) {
+            reorganizeByCategories();
+          } else {
+            restoreOriginalOrder();
+          }
+
+          syncCardModeVisibility();
+        };
+
         // ── Mode switch ──────────────────────────────────────────────
         const setMode = (checklist: boolean) => {
           isChecklistMode = checklist;
           const progressBar = document.getElementById('mission-progress-bar');
-
-          document.querySelectorAll<HTMLElement>('.gallery-view').forEach((el) => {
-            el.style.display = checklist ? 'none' : '';
-          });
-          document.querySelectorAll<HTMLElement>('.checklist-view').forEach((el) => {
-            el.style.display = checklist ? 'flex' : 'none';
-          });
 
           if (checklist) {
             grid.classList.remove('grid', 'md:grid-cols-2', 'gap-8');
@@ -262,6 +293,9 @@ const categories = ['Tous', ...uniqueCategories];
             if (progressBar) progressBar.classList.add('hidden');
             restoreOriginalOrder();
           }
+
+          updateCardFilterVisibility(activeFilter);
+          syncCardModeVisibility();
 
           toggleModeBtn.setAttribute('aria-pressed', String(checklist));
         };

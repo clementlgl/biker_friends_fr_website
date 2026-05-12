@@ -1,0 +1,208 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import type { ImageMetadata } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+
+const base = import.meta.env.BASE_URL;
+
+export async function getStaticPaths() {
+  const items = await getCollection('gear');
+  return items.map((item) => ({
+    params: { id: item.slug },
+    props: { item },
+  }));
+}
+
+interface Props {
+  item: any;
+}
+
+const { item } = Astro.props;
+const { titre, marque, categorie, description, proTip, image, specs, url } = item.data;
+const specEntries = specs ? Object.entries(specs) : [];
+const isAssetImage = typeof image !== 'string';
+
+const { Content } = await item.render();
+---
+
+<BaseLayout title={`${titre} | Matériel | Biker Friends`}>
+  <SiteHeader />
+
+  <main class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 pb-20">
+
+    <!-- Breadcrumb -->
+    <nav class="mb-8">
+      <a
+        href={`${base}gear`}
+        class="font-tech text-[11px] uppercase tracking-[0.2em] text-tactical-accent hover:text-tactical-accentSoft"
+      >
+        ← Retour au matériel
+      </a>
+    </nav>
+
+    <div class="grid gap-10 md:grid-cols-[1fr_360px] md:items-start">
+
+      <!-- Left: Image + specs -->
+      <div>
+        <!-- Image -->
+        <div class="relative overflow-hidden border border-tactical-line bg-tactical-panel/50" style="aspect-ratio: 16/9; max-height: 480px">
+          {isAssetImage ? (
+            <Image
+              src={image as ImageMetadata}
+              alt={titre}
+              class="h-full w-full object-cover"
+              loading="eager"
+              decoding="sync"
+              quality="high"
+              widths={[600, 900, 1200]}
+              sizes="(max-width: 1024px) 100vw, 60vw"
+            />
+          ) : (
+            <picture>
+              <source srcset={(image as string).replace(/\.(jpg|jpeg|png)$/i, '.webp')} type="image/webp" />
+              <img
+                src={image as string}
+                alt={titre}
+                class="h-full w-full object-cover"
+                loading="eager"
+                decoding="sync"
+              />
+            </picture>
+          )}
+
+          <!-- Category badge -->
+          <div class="absolute right-3 top-3 flex flex-col items-end gap-2">
+            {categorie && (
+              <span class="border border-tactical-line bg-black/50 px-3 py-1 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-text">
+                {categorie}
+              </span>
+            )}
+            {specEntries.slice(0, 2).map(([key, value]) => (
+              <span class="border border-tactical-accent/50 bg-[#0d171c]/80 px-3 py-1 font-tech text-[11px] uppercase tracking-[0.14em] text-tactical-accentSoft">
+                {String(value)} {(key as string).replaceAll('_', ' ')}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <!-- Full specs table -->
+        {specEntries.length > 0 && (
+          <div class="mt-6 border border-tactical-line">
+            <div class="border-b border-tactical-line px-5 py-3">
+              <span class="font-tech text-[11px] uppercase tracking-[0.2em] text-tactical-muted">Caractéristiques</span>
+            </div>
+            <dl class="divide-y divide-tactical-line">
+              {specEntries.map(([key, value]) => (
+                <div class="flex items-center justify-between px-5 py-3">
+                  <dt class="font-tech text-[11px] uppercase tracking-[0.14em] text-tactical-muted">
+                    {(key as string).replaceAll('_', ' ')}
+                  </dt>
+                  <dd class="font-tech text-sm text-tactical-text">{String(value)}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
+      </div>
+
+      <!-- Right: Text content -->
+      <div class="md:sticky md:top-8">
+        <header class="border-b border-tactical-line pb-6">
+          <h1 class="font-display text-5xl leading-[0.9] text-tactical-text">
+            {titre.toUpperCase()}
+          </h1>
+          {marque && (
+            <p class="mt-3 font-tech text-xs uppercase tracking-[0.18em] text-tactical-accent">
+              {marque.toUpperCase()}
+            </p>
+          )}
+          <p class="mt-5 font-tech text-sm leading-6 text-tactical-muted">{description}</p>
+        </header>
+
+        <!-- Markdown body -->
+        <div class="prose-gear mt-6">
+          <Content />
+        </div>
+
+        <!-- Pro Tip -->
+        {proTip && (
+          <div class="mt-6 border-l-2 border-tactical-accent bg-tactical-panel/40 px-5 py-4">
+            <p class="mb-1 font-tech text-[10px] uppercase tracking-[0.2em] text-tactical-accent">Pro tip</p>
+            <p class="font-tech text-sm leading-6 text-tactical-muted">{proTip}</p>
+          </div>
+        )}
+
+        <!-- Purchase link -->
+        {url && (
+          <div class="mt-8">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex w-full items-center justify-center gap-2 border border-tactical-accent bg-tactical-accent/10 px-5 py-3 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent transition-colors hover:bg-tactical-accent hover:text-black"
+            >
+              <span>Voir l'offre</span>
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 2.5H9m4.5 0v4.5m0-4.5L8 8" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5v-8a1 1 0 011-1h4" />
+              </svg>
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<style is:global>
+  .prose-gear {
+    color: var(--color-tactical-muted, #8b949e);
+    font-family: var(--font-tech, monospace);
+    font-size: 0.875rem;
+    line-height: 1.75;
+  }
+  .prose-gear p {
+    margin-bottom: 1rem;
+  }
+  .prose-gear strong {
+    color: var(--color-tactical-text, #e6edf3);
+    font-weight: 600;
+  }
+  .prose-gear a {
+    color: var(--color-tactical-accent, #00A3C4);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .prose-gear a:hover {
+    color: var(--color-tactical-accentSoft, #33b8d4);
+  }
+  .prose-gear ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 1rem;
+  }
+  .prose-gear ul li {
+    padding-left: 1.25rem;
+    position: relative;
+    margin-bottom: 0.4rem;
+  }
+  .prose-gear ul li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--color-tactical-accent, #00A3C4);
+  }
+  .prose-gear h2, .prose-gear h3 {
+    font-family: var(--font-display, serif);
+    color: var(--color-tactical-text, #e6edf3);
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-gear h2 { font-size: 1.5rem; }
+  .prose-gear h3 { font-size: 1.1rem; letter-spacing: 0.05em; }
+</style>
