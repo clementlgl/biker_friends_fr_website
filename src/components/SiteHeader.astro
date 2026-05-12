@@ -12,19 +12,19 @@ const navItems = [
 ---
 
 <header class="sticky top-0 z-50 border-b border-tactical-line bg-tactical-bg/92 backdrop-blur-sm transition-colors">
-  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-    <nav aria-label="Primary" class="flex items-center gap-4 sm:gap-7">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
+    <nav aria-label="Primary" class="flex items-center gap-1 sm:gap-5">
       {navItems.map((item) => (
         <a
           href={item.href}
-          class="font-display text-base uppercase tracking-[0.1em] text-tactical-muted transition-colors px-3 py-2 rounded-sm hover:text-tactical-accent"
+          class="font-display text-[11px] sm:text-base uppercase tracking-[0.06em] sm:tracking-[0.1em] text-tactical-muted transition-colors px-1.5 sm:px-3 py-2 rounded-sm hover:text-tactical-accent whitespace-nowrap"
         >
           {item.label}
         </a>
       ))}
     </nav>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-2 sm:gap-4 shrink-0">
       <ThemeToggle />
 
       <a href="https://www.youtube.com/@biker_friends_fr" target="_blank" rel="noopener noreferrer" class="grid h-8 w-8 place-items-center border border-tactical-line light:bg-tactical-line/40 transition-colors hover:bg-tactical-panel/60 hover:border-tactical-accent" title="Visitez notre chaîne YouTube">

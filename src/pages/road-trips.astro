@@ -22,7 +22,7 @@ const voyages = (await getCollection('voyages')).sort((a, b) => a.id.localeCompa
         </p>
       </header>
 
-      <section id="trips" class="grid gap-6" style="grid-template-columns: repeat(3, 1fr)">
+      <section id="trips" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {voyages.map((voyage) => (
           <div class="group relative h-full">
             <CardVoyage
