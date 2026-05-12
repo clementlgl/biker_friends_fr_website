@@ -27,6 +27,14 @@ const STATUS_MAP: Record<number, 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT'> = {
   2: 'OPEN'
 };
 
+function mapSavoieStatus(value: unknown): 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' {
+  const raw = String(value ?? '').trim().toLowerCase();
+  if (raw.includes('ferm')) return 'CLOSED';
+  if (raw.includes('partiel')) return 'PARTIAL';
+  if (raw.includes('ouvert')) return 'OPEN';
+  return 'ALERT';
+}
+
 /**
  * Approximate altitudes for Savoie Route passes
  * These are estimated from common knowledge - ideally would come from elevation API
@@ -93,19 +101,53 @@ export async function fetchSavoieRoutePasses(): Promise<MountainPass[]> {
       return [];
     }
 
-    // Map Savoie Route data to MountainPass format
-    return data.map((pass: any) => {
-      const passName = pass.FRLabel || 'Unknown Pass';
+    const detailedPasses = await Promise.all(
+      data.map(async (pass: any) => {
+        const idAll = pass?.idtInfo;
+        if (!idAll) {
+          return pass;
+        }
+
+        try {
+          const detailResponse = await fetch('https://savoie-route.fr/api/v1/evenements/allDataCarto', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ idAll })
+          });
+
+          if (!detailResponse.ok) {
+            console.error(`Savoie Route detail API error for idAll=${idAll}:`, detailResponse.status);
+            return pass;
+          }
+
+          const detailData = await detailResponse.json();
+          if (Array.isArray(detailData) && detailData.length > 0) {
+            return detailData[0];
+          }
+          return pass;
+        } catch (detailError) {
+          console.error(`Failed to fetch Savoie Route detail for idAll=${idAll}:`, detailError);
+          return pass;
+        }
+      })
+    );
+
+    return detailedPasses.map((pass: any) => {
+      const passName = pass.FRLabel || pass.Label || 'Unknown Pass';
+      const rawStatus = pass.FREtat ?? pass.ENEtat ?? pass.Etat;
+
       return {
-        id: `savoie-${pass.idtInfo}`,
+        id: `savoie-${pass.idtInfo ?? pass.ID ?? pass.id ?? passName.replace(/\s+/g, '-').toLowerCase()}`,
         name: passName,
-        altitude: pass.altitude || PASS_ALTITUDES[passName] || 0,
+        altitude: pass.Altitude || 0,
         region: 'Alpes - Savoie',
         department: '73',
-        status: STATUS_MAP[pass.Etat] || 'ALERT',
-        updated: new Date(),
+        status: mapSavoieStatus(rawStatus),
+        updated: pass.maj ? new Date(pass.maj) : new Date(),
         source: 'savoie-route.fr',
-        coordinates: [pass.latitude, pass.longitude] as [number, number]
+        coordinates: [pass.Latitude ?? pass.latitude ?? 0, pass.Longitude ?? pass.longitude ?? 0] as [number, number]
       };
     });
   } catch (error) {
