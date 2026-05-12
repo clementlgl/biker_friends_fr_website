@@ -1,12 +1,11 @@
 ---
-import '../../styles/global.css';
 import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import GpxMap from '../../components/GpxMap.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import { distanceFromGpx } from '../../utils/gpxDistance';
 import { withBase } from '../../utils/withBase';
-import { INLINE_INIT_SCRIPT } from '../../scripts/theme';
+import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { ImageMetadata } from 'astro';
 
 const base = import.meta.env.BASE_URL;
@@ -29,32 +28,14 @@ const { titre, description, duration, gpxFile, image, youtubeId } = voyage.data;
 const gpxFileWithBase = withBase(gpxFile, base);
 const distance = distanceFromGpx(gpxFile) ?? voyage.data.distance ?? 0;
 
-const voyageCountries: Record<string, string> = {
-  'trans-pyrenean-adventure': 'Europe',
-  'carretera-austral': 'Patagonie',
-  'dalton-highway': 'Alaska'
-};
-
 const heroImageIsAsset = typeof image !== 'string';
-const country = voyageCountries[voyage.id] || 'Unknown';
 const stageOneDistance = Math.ceil((distance * 0.52) / 10) * 10;
 const stageTwoDistance = Math.max(0, distance - stageOneDistance);
 
 const { Content } = await voyage.render();
 ---
 
-<html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <link rel="icon" href={`${base}favicon.ico`} />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{titre} | Biker Friends</title>
-    <!-- Script inline pour initialiser le thème sans flash -->
-    <script is:inline set:html={INLINE_INIT_SCRIPT}></script>
-  </head>
-  <body>
+<BaseLayout title={`${titre} | Biker Friends`}>
     <SiteHeader />
 
     <main class="bg-[#090c0b] text-tactical-text">
@@ -69,6 +50,7 @@ const { Content } = await voyage.render();
             quality="high"
             widths={[800, 1200, 1600, 2000]}
             sizes="100vw"
+            fetchpriority="high"
           />
         ) : (
           <picture>
@@ -148,7 +130,7 @@ const { Content } = await voyage.render();
           </article>
 
           <article class="border border-tactical-line bg-tactical-panel">
-            <header class="flex flex-wrap items-end justify-between gap-4 border-b border-tactical-line bg-white/[0.06] px-4 py-3 sm:px-5">
+            <header class="flex flex-wrap items-end justify-between gap-4 border-b border-tactical-line bg-white/6 px-4 py-3 sm:px-5">
               <h2 class="font-display text-4xl uppercase leading-none">Étape 01</h2>
               <p class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-muted">Distance <span class="text-tactical-accent">{stageOneDistance.toLocaleString()} km</span></p>
             </header>
@@ -192,7 +174,7 @@ const { Content } = await voyage.render();
           </article>
 
           <article class="border border-tactical-line bg-tactical-panel">
-            <header class="flex flex-wrap items-end justify-between gap-4 border-b border-tactical-line bg-white/[0.06] px-4 py-3 sm:px-5">
+            <header class="flex flex-wrap items-end justify-between gap-4 border-b border-tactical-line bg-white/6 px-4 py-3 sm:px-5">
               <h2 class="font-display text-4xl uppercase leading-none">Étape 02</h2>
               <p class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-muted">Distance <span class="text-tactical-accent">{stageTwoDistance.toLocaleString()} km</span></p>
             </header>
@@ -213,5 +195,4 @@ const { Content } = await voyage.render();
         </div>
       </section>
     </main>
-  </body>
-</html>
+</BaseLayout>

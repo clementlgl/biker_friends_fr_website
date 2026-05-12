@@ -1,6 +1,4 @@
-import { defineCollection, image, reference, z } from 'astro:content';
-
-const difficultyEnum = z.enum(['Easy', 'Medium', 'Hard', 'Extreme']);
+import { defineCollection, reference, z } from 'astro:content';
 const gearCategoryEnum = z.enum([
   'Moto',
   'Bagages',
@@ -20,7 +18,9 @@ const voyages = defineCollection({
     titre: z.string().min(1),
     description: z.string().min(1),
     date: z.coerce.date(),
+    gpxFile: z.string().min(1),
     distance: z.number().positive().optional(),
+    country: z.string().min(1),
     duration: z.number().positive(),
     image: image(),
     youtubeId: z.string().min(1),

@@ -1,30 +1,15 @@
 ---
-import '../styles/global.css';
+import { Image } from 'astro:assets';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import WorldMap from '../components/WorldMap.astro';
-import { INLINE_INIT_SCRIPT } from '../scripts/theme';
-import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import heroImage from '../assets/hero/CLA00867.jpg';
 
 const base = import.meta.env.BASE_URL;
 
-// Fetch all voyages
-const voyages = await getCollection('voyages');
-
 ---
 
-<html lang="fr">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-		<link rel="icon" href={`${base}favicon.ico`} />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Biker Friends - Accueil</title>
-		<!-- Script inline pour initialiser le thème sans flash -->
-		<script is:inline set:html={INLINE_INIT_SCRIPT}></script>
-	</head>
-	<body class="bg-tactical-bg text-slate-100 overflow-x-hidden">
+<BaseLayout title="Biker Friends - Accueil" bodyClass="bg-tactical-bg text-slate-100 overflow-x-hidden">
 		<!-- Overlay Grain/Bruit -->
 		<div class="fixed inset-0 pointer-events-none opacity-[0.015] z-0" 
 			style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlUGVydGluTm9pc2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjkiIG51bU9jdGF2ZXM9IjQiIHNlZWQ9IjIiIC8+PC9maWx0ZXI+PC9zdmc+'); background-size: 200px 200px;"></div>
@@ -34,14 +19,19 @@ const voyages = await getCollection('voyages');
 		<main class="relative z-10">
 			<!-- SECTION 01 : HERO CINÉMATIQUE -->
 			<section class="w-full flex justify-center">
-				<div class="w-full max-w-7xl px-6 mt-8 md:mt-12">
-					<div class="relative mx-auto aspect-video md:v-[100vh] rounded-[2.5rem] overflow-hidden border border-white/10 group">
+				<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 mt-8 md:mt-12">
+					<div class="relative w-full aspect-video max-h-[80vh] rounded-[2.5rem] overflow-hidden border border-white/10 group">
 						<!-- Image de fond avec dégradé -->
-						<div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10"></div>
-						<img
-							src={`${base}images/CLA00867.jpg`}
+						<div class="absolute inset-0 bg-linear-to-t from-slate-950 via-transparent to-transparent z-10"></div>
+						<Image
+							src={heroImage}
 							alt="Photo d'aventure à moto"
 							class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+							loading="eager"
+							decoding="sync"
+							quality="high"
+							widths={[800, 1200, 1600, 2000]}
+							sizes="100vw"
 						/>
 
 						<!-- Contenu Hero -->
@@ -98,6 +88,4 @@ const voyages = await getCollection('voyages');
 				scroll-behavior: smooth;
 			}
 		</style>
-		</script>
-	</body>
-</html>
+</BaseLayout>

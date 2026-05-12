@@ -1,35 +1,17 @@
 ---
-import '../styles/global.css';
 import { getCollection } from 'astro:content';
 import CardVoyage from '../components/CardVoyage.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { distanceFromGpx } from '../utils/gpxDistance';
 import { withBase } from '../utils/withBase';
-import { INLINE_INIT_SCRIPT } from '../scripts/theme';
+import BaseLayout from '../layouts/BaseLayout.astro';
 
 const base = import.meta.env.BASE_URL;
 const voyages = (await getCollection('voyages')).sort((a, b) => a.id.localeCompare(b.id));
-
-const voyageCountries: Record<string, string> = {
-  'trans-pyrenean-adventure': 'Europe',
-  'carretera-austral': 'Patagonie',
-  'dalton-highway': 'Alaska'
-};
 ---
 
-<html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <link rel="icon" href={`${base}favicon.ico`} />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Road Trips | Biker Friends</title>
-    <!-- Script inline pour initialiser le thème sans flash -->
-    <script is:inline set:html={INLINE_INIT_SCRIPT}></script>
-  </head>
-  <body>
+<BaseLayout title="Road Trips | Biker Friends">
     <SiteHeader />
 
     <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -46,7 +28,7 @@ const voyageCountries: Record<string, string> = {
             <CardVoyage
               image={voyage.data.image}
               title={voyage.data.titre}
-              country={voyageCountries[voyage.id] || 'Unknown'}
+              country={voyage.data.country}
               duration={voyage.data.duration}
               distance={distanceFromGpx(voyage.data.gpxFile) ?? voyage.data.distance ?? 0}
               gpxUrl={withBase(voyage.data.gpxFile, base)}
@@ -57,5 +39,4 @@ const voyageCountries: Record<string, string> = {
       </section>
     </main>
     <SiteFooter />
-  </body>
-</html>
+</BaseLayout>

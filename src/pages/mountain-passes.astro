@@ -1,10 +1,9 @@
 ---
-import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import MountainPassCard from '../components/MountainPassCard.astro';
-import { getAllMountainPasses, filterByRegion, filterByStatus } from '../utils/mountainPasses';
-import { INLINE_INIT_SCRIPT } from '../scripts/theme';
+import { getAllMountainPasses } from '../utils/mountainPasses';
+import BaseLayout from '../layouts/BaseLayout.astro';
 
 const base = import.meta.env.BASE_URL;
 
@@ -25,18 +24,7 @@ deptSet.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
 const departments = ['ALL', ...deptSet];
 ---
 
-<html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <link rel="icon" href={`${base}favicon.ico`} />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>État des Cols | Biker Friends</title>
-    <!-- Script inline pour initialiser le thème sans flash -->
-    <script is:inline set:html={INLINE_INIT_SCRIPT}></script>
-  </head>
-  <body>
+<BaseLayout title="État des Cols | Biker Friends">
     <SiteHeader />
 
     <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -155,7 +143,7 @@ const departments = ['ALL', ...deptSet];
 
       <!-- Map view container -->
       <section id="map-view" class="hidden">
-        <div id="mountain-passes-map" class="w-full h-[48rem] rounded-lg border border-tactical-line overflow-hidden bg-tactical-panel"></div>
+        <div id="mountain-passes-map" class="w-full h-192 rounded-lg border border-tactical-line overflow-hidden bg-tactical-panel"></div>
       </section>
 
     </main>
@@ -369,5 +357,4 @@ const departments = ['ALL', ...deptSet];
         });
       });
     </script>
-  </body>
-</html>
+</BaseLayout>

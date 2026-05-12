@@ -1,15 +1,12 @@
 ---
-import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import GearItem from '../components/GearItem.astro';
 import MissionProgressBar from '../components/MissionProgressBar.astro';
-import { withBase } from '../utils/withBase';
-import { INLINE_INIT_SCRIPT } from '../scripts/theme';
+import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCategoryOrder } from '../utils/getCategoryOrder';
 import { getGearItems } from '../utils/loadGearItems';
 
-const base = import.meta.env.BASE_URL;
 const categoryOrder = getCategoryOrder();
 const gearItems = (await getGearItems()).sort((a, b) => {
   const catA = a.data.categorie;
@@ -26,16 +23,11 @@ const uniqueCategories = Array.from(new Set(gearItems.map((item) => item.data.ca
 const categories = ['Tous', ...uniqueCategories];
 ---
 
-<html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
-    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Matériel | Biker Friends</title>
-    <!-- Script inline pour initialiser le thème sans flash -->
-    <script is:inline set:html={INLINE_INIT_SCRIPT}></script>
+<BaseLayout
+  title="Matériel | Biker Friends"
+  bodyAttrs={{ 'data-category-order': JSON.stringify(categoryOrder) }}
+>
+  <Fragment slot="head">
     <style is:global>
       /* Checklist mode – checked item states */
       .gear-item.is-checked .checklist-view {
@@ -55,8 +47,8 @@ const categories = ['Tous', ...uniqueCategories];
         color: #8b949e;
       }
     </style>
-  </head>
-  <body data-category-order={JSON.stringify(categoryOrder)}>
+  </Fragment>
+
     <SiteHeader />
     <MissionProgressBar total={gearItems.length} />
 
@@ -139,25 +131,30 @@ const categories = ['Tous', ...uniqueCategories];
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const STORAGE_KEY = 'bf-gear-checklist-v1';
-        const CATEGORY_ORDER = JSON.parse(document.querySelector('[data-category-order]')?.getAttribute('data-category-order') || '["Administratif", "Atelier", "Campement", "Cuisine", "Hygiène", "Tech", "Vêtements"]');
+        const categoryOrderNode = document.querySelector<HTMLElement>('[data-category-order]');
+        const CATEGORY_ORDER: string[] = JSON.parse(categoryOrderNode?.getAttribute('data-category-order') || '["Administratif", "Atelier", "Campement", "Cuisine", "Hygiène", "Tech", "Vêtements"]');
 
         // ── State ────────────────────────────────────────────────────
         let isChecklistMode = false;
-        let checkedItems = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'));
+        let checkedItems = new Set<string>(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'));
 
         // ── DOM refs ─────────────────────────────────────────────────
-        const filterButtons = Array.from(document.querySelectorAll('.filter-btn'));
-        const gearCards     = Array.from(document.querySelectorAll('#gear-grid .gear-item'));
-        const grid          = document.getElementById('gear-grid');
+        const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.filter-btn'));
+        const gearCards = Array.from(document.querySelectorAll<HTMLElement>('#gear-grid .gear-item'));
+        const grid = document.getElementById('gear-grid');
         const toggleModeBtn = document.getElementById('toggle-mode-btn');
-        const resetBtn      = document.getElementById('reset-checklist-btn');
+        const resetBtn = document.getElementById('reset-checklist-btn');
+
+        if (!grid || !toggleModeBtn || !resetBtn) {
+          return;
+        }
 
         // ── Icons ────────────────────────────────────────────────────
         const CHECKLIST_ICON = `<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="2" width="4.5" height="4.5" rx="0.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5h5M9 8h5M9 11.5h5"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l1 1 2-2.5"/></svg>`;
         const GALLERY_ICON   = `<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="0.5"/><rect x="9" y="1" width="6" height="6" rx="0.5"/><rect x="1" y="9" width="6" height="6" rx="0.5"/><rect x="9" y="9" width="6" height="6" rx="0.5"/></svg>`;
 
         // ── Filter ───────────────────────────────────────────────────
-        const applyFilter = (filter) => {
+        const applyFilter = (filter: string) => {
           for (const card of gearCards) {
             const cat = card.getAttribute('data-category');
             card.classList.toggle('hidden', filter !== 'all' && cat !== filter);
@@ -177,7 +174,7 @@ const categories = ['Tous', ...uniqueCategories];
         const saveChecked = () =>
           localStorage.setItem(STORAGE_KEY, JSON.stringify([...checkedItems]));
 
-        const refreshCardVisual = (card) => {
+        const refreshCardVisual = (card: HTMLElement) => {
           const id      = card.getAttribute('data-gear-id') ?? '';
           const checked = checkedItems.has(id);
           card.classList.toggle('is-checked', checked);
@@ -185,20 +182,20 @@ const categories = ['Tous', ...uniqueCategories];
           if (checklistView) checklistView.setAttribute('aria-checked', String(checked));
         };
 
-        const toggleItem = (id) => {
+        const toggleItem = (id: string) => {
           checkedItems.has(id) ? checkedItems.delete(id) : checkedItems.add(id);
           saveChecked();
-          const card = document.querySelector(`.gear-item[data-gear-id="${CSS.escape(id)}"]`);
+          const card = document.querySelector<HTMLElement>(`.gear-item[data-gear-id="${CSS.escape(id)}"]`);
           if (card) refreshCardVisual(card);
           window.dispatchEvent(new CustomEvent('gear:checklist-updated'));
         };
 
         // ── Reorganize by categories ─────────────────────────────
         const reorganizeByCategories = () => {
-          const categories = CATEGORY_ORDER;
-          const itemsByCategory = {};
+          const categories: string[] = CATEGORY_ORDER;
+          const itemsByCategory: Record<string, HTMLElement[]> = {};
           
-          categories.forEach(cat => {
+          categories.forEach((cat: string) => {
             itemsByCategory[cat] = [];
           });
           
@@ -210,7 +207,7 @@ const categories = ['Tous', ...uniqueCategories];
           });
           
           grid.innerHTML = '';
-          categories.forEach(category => {
+          categories.forEach((category: string) => {
             if (itemsByCategory[category].length > 0) {
               // Create category header
               const header = document.createElement('div');
@@ -219,7 +216,7 @@ const categories = ['Tous', ...uniqueCategories];
               grid.appendChild(header);
               
               // Add items for this category
-              itemsByCategory[category].forEach(card => {
+              itemsByCategory[category].forEach((card: HTMLElement) => {
                 grid.appendChild(card);
               });
             }
@@ -234,14 +231,14 @@ const categories = ['Tous', ...uniqueCategories];
         };
 
         // ── Mode switch ──────────────────────────────────────────────
-        const setMode = (checklist) => {
+        const setMode = (checklist: boolean) => {
           isChecklistMode = checklist;
           const progressBar = document.getElementById('mission-progress-bar');
 
-          document.querySelectorAll('.gallery-view').forEach((el) => {
+          document.querySelectorAll<HTMLElement>('.gallery-view').forEach((el) => {
             el.style.display = checklist ? 'none' : '';
           });
-          document.querySelectorAll('.checklist-view').forEach((el) => {
+          document.querySelectorAll<HTMLElement>('.checklist-view').forEach((el) => {
             el.style.display = checklist ? 'flex' : 'none';
           });
 
@@ -288,9 +285,10 @@ const categories = ['Tous', ...uniqueCategories];
             toggleItem(card.getAttribute('data-gear-id') ?? '');
           });
           // Keyboard support
-          card.querySelector('.checklist-view')?.addEventListener('keydown', (e) => {
-            if (e.key === ' ' || e.key === 'Enter') {
-              e.preventDefault();
+          card.querySelector('.checklist-view')?.addEventListener('keydown', (e: Event) => {
+            const keyEvent = e as KeyboardEvent;
+            if (keyEvent.key === ' ' || keyEvent.key === 'Enter') {
+              keyEvent.preventDefault();
               toggleItem(card.getAttribute('data-gear-id') ?? '');
             }
           });
@@ -300,5 +298,4 @@ const categories = ['Tous', ...uniqueCategories];
         applyFilter('all');
       });
     </script>
-  </body>
-</html>
+</BaseLayout>

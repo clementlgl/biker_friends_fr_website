@@ -41,8 +41,8 @@ const isAssetImage = typeof image !== 'string';
           loading="lazy"
           decoding="async"
           quality="high"
-          widths={[700, 900]}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          widths={[400, 600, 800, 1000, 1200]}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 66vw, 100vw"
         />
       ) : (
         <picture>
@@ -53,6 +53,7 @@ const isAssetImage = typeof image !== 'string';
             class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             loading="lazy"
             decoding="async"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 66vw, 100vw"
           />
         </picture>
       )}
