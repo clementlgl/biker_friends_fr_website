@@ -1,7 +1,7 @@
 ---
 id: microfibre
 titre: Chiffons microfibre
-description: Pour nettoyer, essuyer ou protéger les surfaces.
+description: Nettoyer, essuyer la moto et le matériel.
 image: ../../../assets/gear/microfibre.png
 ---
 Toujours utile pour nettoyer et entretenir ta moto et le matériel.

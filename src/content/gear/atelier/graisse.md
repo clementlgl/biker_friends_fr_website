@@ -1,8 +1,8 @@
 ---
 id: Graisse
-titre: graisse
+titre: Graisse
 marque: Motul
-description: Pour graisser la chaîne.
+description: Graisser la chaîne.
 url: https://www.motul.com/fr-TN/products/23301
 image: ../../../assets/gear/graisse.png
 ---

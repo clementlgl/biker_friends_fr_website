@@ -1,6 +1,6 @@
 ---
-id: jeans
-titre: Jeans
+id: jean
+titre: Jean
 description: Pour le soir au campement ou les balades en ville.
-image: ../../../assets/gear/jeans.png
+image: ../../../assets/gear/jean.png
 ---

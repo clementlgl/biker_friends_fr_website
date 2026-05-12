@@ -2,9 +2,7 @@
 id: rislans
 titre: Colliers de serrage (rislans)
 marque: Bricorama
-description: Pour fixer, attacher ou réparer rapidement.
-specs:
-  quantite: 10
+description: Fixer, attacher ou réparer rapidement.
 image: ../../../assets/gear/rislans.png
 ---
 Multi-usages, toujours utiles.
