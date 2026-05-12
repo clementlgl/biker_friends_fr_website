@@ -12,7 +12,9 @@ const base = import.meta.env.BASE_URL;
 
 export async function getStaticPaths() {
   const voyages = await getCollection('voyages');
-  return voyages.map((voyage) => ({
+  return voyages
+    .filter((voyage) => !voyage.data.draft)
+    .map((voyage) => ({
     params: { id: voyage.slug },
     props: { voyage }
   }));

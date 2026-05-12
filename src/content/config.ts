@@ -19,12 +19,11 @@ const voyages = defineCollection({
     description: z.string().min(1),
     date: z.coerce.date(),
     gpxFile: z.string().min(1),
-    distance: z.number().positive().optional(),
     country: z.string().min(1),
     duration: z.number().positive(),
+    draft: z.boolean().default(false),
     image: image(),
     youtubeId: z.string().min(1),
-    gearRelated: z.array(reference('gear')).default([])
   })
 });
 

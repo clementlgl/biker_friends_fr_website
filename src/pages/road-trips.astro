@@ -32,8 +32,11 @@ const voyages = (await getCollection('voyages')).sort((a, b) => a.id.localeCompa
               duration={voyage.data.duration}
               distance={distanceFromGpx(voyage.data.gpxFile) ?? voyage.data.distance ?? 0}
               gpxUrl={withBase(voyage.data.gpxFile, base)}
+              draft={voyage.data.draft}
             />
-            <a href={`${base}road-trips/${voyage.slug}`} class="absolute inset-0 z-10" aria-label={voyage.data.titre}></a>
+            {!voyage.data.draft && (
+              <a href={`${base}road-trips/${voyage.slug}`} class="absolute inset-0 z-10" aria-label={voyage.data.titre}></a>
+            )}
           </div>
         ))}
       </section>
