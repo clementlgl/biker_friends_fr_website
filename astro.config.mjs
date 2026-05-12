@@ -6,7 +6,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/biker_friends_fr_website/' : '/',
+  base: '/',
+  site: 'https://www.bikerfriends.fr',
   integrations: [mdx()],
   image: {
     // Format des images : WebP par défaut, fallback JPEG
