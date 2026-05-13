@@ -4,17 +4,17 @@
  * Utilise le composant <Image/> d'Astro pour conversion WebP au build
  */
 
-import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
 
 interface Props {
-  image: string | ImageMetadata;
-  title: string;
-  country?: string;
-  duration: number;
-  distance: number;
-  gpxUrl?: string;
-  draft?: boolean;
+  image: string | ImageMetadata
+  title: string
+  country?: string
+  duration: number
+  distance: number
+  gpxUrl?: string
+  draft?: boolean
 }
 
 const {
@@ -24,80 +24,103 @@ const {
   duration,
   distance,
   gpxUrl = '#',
-  draft = false
-} = Astro.props;
+  draft = false,
+} = Astro.props
 
-const isAssetImage = typeof image !== 'string';
+const isAssetImage = typeof image !== 'string'
 ---
 
-<article class="group relative flex flex-col h-full overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical transition-transform duration-300 hover:-translate-y-0.5">
+<article
+  class="group relative flex flex-col h-full overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical transition-transform duration-300 hover:-translate-y-0.5"
+>
   <!-- Image container with aspect ratio to prevent layout shift -->
   <div class="relative flex-1 w-full overflow-hidden" style="aspect-ratio: 16/10">
-    {isAssetImage ? (
-      <Image
-        src={image as ImageMetadata}
-        alt={title}
-        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-        loading="lazy"
-        decoding="async"
-        quality="high"
-        widths={[400, 600, 800, 1000, 1200]}
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 66vw, 100vw"
-      />
-    ) : (
-      <picture>
-        <source srcset={image.replace(/\.(jpg|jpeg|png)$/i, '.webp')} type="image/webp" />
-        <img
-          src={image}
+    {
+      isAssetImage ? (
+        <Image
+          src={image as ImageMetadata}
           alt={title}
           class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           loading="lazy"
           decoding="async"
+          quality="high"
+          widths={[400, 600, 800, 1000, 1200]}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 66vw, 100vw"
         />
-      </picture>
-    )}
+      ) : (
+        <picture>
+          <source srcset={image.replace(/\.(jpg|jpeg|png)$/i, '.webp')} type="image/webp" />
+          <img
+            src={image}
+            alt={title}
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            loading="lazy"
+            decoding="async"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 66vw, 100vw"
+          />
+        </picture>
+      )
+    }
     <div class="absolute inset-0 bg-tactical-overlay"></div>
 
     <div class="absolute left-4 top-4 flex items-center gap-2">
-      <span class="border border-tactical-line bg-white/90 px-2.5 py-1 font-tech text-[10px] uppercase tracking-tactical text-tactical-text dark:bg-black/55 dark:text-tactical-muted">
+      <span
+        class="border border-tactical-line bg-white/90 px-2.5 py-1 font-tech text-[10px] uppercase tracking-tactical text-tactical-text dark:bg-black/55 dark:text-tactical-muted"
+      >
         {duration} jours
       </span>
     </div>
 
     <div class="absolute inset-x-0 bottom-0 p-4 sm:p-5">
       <p class="font-tech text-xs uppercase tracking-[0.22em] text-tactical-accent">{country}</p>
-      <h3 class="mt-2 max-w-[16ch] font-display text-3xl sm:text-5xl uppercase leading-[0.92] text-white">
+      <h3
+        class="mt-2 max-w-[16ch] font-display text-3xl sm:text-5xl uppercase leading-[0.92] text-white"
+      >
         {title}
       </h3>
     </div>
   </div>
 
-  <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-tactical-line bg-tactical-panelSoft/85 px-4 py-3 sm:px-5 sm:py-4">
+  <footer
+    class="flex flex-wrap items-center justify-between gap-3 border-t border-tactical-line bg-tactical-panelSoft/85 px-4 py-3 sm:px-5 sm:py-4"
+  >
     <dl class="grid grid-cols-1 gap-6">
       <div>
-        <dt class="font-tech text-[10px] uppercase tracking-[0.22em] text-tactical-muted">Distance</dt>
-        <dd class="mt-1 font-tech text-sm uppercase tracking-wide text-tactical-text">{distance.toLocaleString()} km</dd>
+        <dt class="font-tech text-[10px] uppercase tracking-[0.22em] text-tactical-muted">
+          Distance
+        </dt>
+        <dd class="mt-1 font-tech text-sm uppercase tracking-wide text-tactical-text">
+          {distance.toLocaleString()} km
+        </dd>
       </div>
     </dl>
 
-    {draft ? (
-      <span class="relative z-20 inline-flex items-center px-3 py-2 font-tech text-[11px] uppercase tracking-[0.16em] border border-amber-200/60 bg-amber-100 text-amber-800 dark:border-amber-400/40 dark:bg-amber-300/10 dark:text-amber-200">
-        Bientôt disponible
-      </span>
-    ) : (
-      <a
-        href={gpxUrl}
-        class="relative z-20 inline-flex items-center gap-2 border border-tactical-accent/60 bg-tactical-accent/10 px-3 py-2 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-accent transition-colors hover:bg-tactical-accent hover:text-[#071014]"
-        download
-      >
-        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path d="M12 3v11" stroke-linecap="round" />
-          <path d="m7.5 10.5 4.5 4.5 4.5-4.5" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M4 18.5h16" stroke-linecap="round" />
-        </svg>
-        GPX
-      </a>
-    )}
+    {
+      draft ? (
+        <span class="relative z-20 inline-flex items-center px-3 py-2 font-tech text-[11px] uppercase tracking-[0.16em] border border-amber-200/60 bg-amber-100 text-amber-800 dark:border-amber-400/40 dark:bg-amber-300/10 dark:text-amber-200">
+          Bientôt disponible
+        </span>
+      ) : (
+        <a
+          href={gpxUrl}
+          class="relative z-20 inline-flex items-center gap-2 border border-tactical-accent/60 bg-tactical-accent/10 px-3 py-2 font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-accent transition-colors hover:bg-tactical-accent hover:text-[#071014]"
+          download
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path d="M12 3v11" stroke-linecap="round" />
+            <path d="m7.5 10.5 4.5 4.5 4.5-4.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M4 18.5h16" stroke-linecap="round" />
+          </svg>
+          GPX
+        </a>
+      )
+    }
   </footer>
 </article>

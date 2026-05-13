@@ -1,27 +1,27 @@
 ---
-import SiteHeader from '../components/SiteHeader.astro';
-import SiteFooter from '../components/SiteFooter.astro';
-import GearItem from '../components/GearItem.astro';
-import MissionProgressBar from '../components/MissionProgressBar.astro';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { getGearItems } from '../utils/loadGearItems';
+import SiteHeader from '../components/SiteHeader.astro'
+import SiteFooter from '../components/SiteFooter.astro'
+import GearItem from '../components/GearItem.astro'
+import MissionProgressBar from '../components/MissionProgressBar.astro'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { getGearItems } from '../utils/loadGearItems'
 
-const gearItems = await getGearItems();
-const categoryOrder = Array.from(new Set(gearItems.map((item) => item.data.categorie))).sort((a, b) =>
-  a.localeCompare(b, 'fr', { sensitivity: 'base' })
-);
+const gearItems = await getGearItems()
+const categoryOrder = Array.from(new Set(gearItems.map((item) => item.data.categorie))).sort(
+  (a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' })
+)
 const sortedGearItems = [...gearItems].sort((a, b) => {
-  const catA = a.data.categorie;
-  const catB = b.data.categorie;
-  const catIndexA = categoryOrder.indexOf(catA);
-  const catIndexB = categoryOrder.indexOf(catB);
-  
+  const catA = a.data.categorie
+  const catB = b.data.categorie
+  const catIndexA = categoryOrder.indexOf(catA)
+  const catIndexB = categoryOrder.indexOf(catB)
+
   if (catIndexA !== catIndexB) {
-    return catIndexA - catIndexB;
+    return catIndexA - catIndexB
   }
-  return a.data.titre.localeCompare(b.data.titre);
-});
-const categories = ['Tous', ...categoryOrder];
+  return a.data.titre.localeCompare(b.data.titre)
+})
+const categories = ['Tous', ...categoryOrder]
 ---
 
 <BaseLayout
@@ -36,7 +36,7 @@ const categories = ['Tous', ...categoryOrder];
         background-color: rgba(0, 163, 196, 0.04) !important;
       }
       .gear-item.is-checked .checkbox-indicator {
-        border-color: #00A3C4 !important;
+        border-color: #00a3c4 !important;
         background-color: rgba(0, 163, 196, 0.18) !important;
       }
       .gear-item.is-checked .checkmark-icon {
@@ -50,23 +50,30 @@ const categories = ['Tous', ...categoryOrder];
     </style>
   </Fragment>
 
-    <SiteHeader />
-    <MissionProgressBar total={gearItems.length} />
+  <SiteHeader />
+  <MissionProgressBar total={gearItems.length} />
 
-    <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 pb-16">
-      <header class="mb-12 border-b border-tactical-line pb-6">
-        <h1 class="mt-3 font-display text-5xl leading-[0.9] text-tactical-text">Matériel</h1>
-        <p class="mt-4 max-w-3xl font-tech text-sm leading-6 text-tactical-muted">
-          Liste complète du matériel emporté pour chaque road trip. Utilise la checklist pour préparer ton aventure sans rien oublier !
-        </p>
-      </header>
+  <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 pb-16">
+    <header class="mb-12 border-b border-tactical-line pb-6">
+      <h1 class="mt-3 font-display text-5xl leading-[0.9] text-tactical-text">Matériel</h1>
+      <p class="mt-4 max-w-3xl font-tech text-sm leading-6 text-tactical-muted">
+        Liste complète du matériel emporté pour chaque road trip. Utilise la checklist pour préparer
+        ton aventure sans rien oublier !
+      </p>
+    </header>
 
-      <section class="mt-8">
-        <div class="border-y border-tactical-line py-4">
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div id="gear-filters" class="flex flex-wrap gap-2" role="tablist" aria-label="Gear categories">
-              {categories.map((category, index) => {
-                const value = category === 'Tous' ? 'all' : category;
+    <section class="mt-8">
+      <div class="border-y border-tactical-line py-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div
+            id="gear-filters"
+            class="flex flex-wrap gap-2"
+            role="tablist"
+            aria-label="Gear categories"
+          >
+            {
+              categories.map((category, index) => {
+                const value = category === 'Tous' ? 'all' : category
                 return (
                   <button
                     type="button"
@@ -80,38 +87,48 @@ const categories = ['Tous', ...categoryOrder];
                   >
                     {category}
                   </button>
-                );
-              })}
-            </div>
+                )
+              })
+            }
+          </div>
 
-            <div class="flex shrink-0 items-center gap-2">
-              <button
-                id="toggle-mode-btn"
-                type="button"
-                class="flex items-center gap-2 border border-tactical-line px-4 py-2 font-tech text-xs uppercase tracking-[0.14em] text-tactical-muted transition-colors hover:border-tactical-accent hover:text-tactical-accentSoft"
-                aria-pressed="false"
+          <div class="flex shrink-0 items-center gap-2">
+            <button
+              id="toggle-mode-btn"
+              type="button"
+              class="flex items-center gap-2 border border-tactical-line px-4 py-2 font-tech text-xs uppercase tracking-[0.14em] text-tactical-muted transition-colors hover:border-tactical-accent hover:text-tactical-accentSoft"
+              aria-pressed="false"
+            >
+              <svg
+                class="h-3.5 w-3.5 shrink-0"
+                fill="none"
+                viewBox="0 0 16 16"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
               >
-                <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                  <rect x="2" y="2" width="4.5" height="4.5" rx="0.5"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5h5M9 8h5M9 11.5h5"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l1 1 2-2.5"/>
-                </svg>
-                <span>Checklist Mode</span>
-              </button>
-              <button
-                id="reset-checklist-btn"
-                type="button"
-                class="hidden border border-tactical-line px-3 py-2 font-tech text-xs uppercase tracking-[0.14em] text-tactical-muted transition-colors hover:border-red-500/50 hover:text-red-400"
-                title="Vider la checklist"
-              >
-                ↺ Reset
-              </button>
-            </div>
+                <rect x="2" y="2" width="4.5" height="4.5" rx="0.5"></rect>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5h5M9 8h5M9 11.5h5"
+                ></path>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l1 1 2-2.5"></path>
+              </svg>
+              <span>Checklist Mode</span>
+            </button>
+            <button
+              id="reset-checklist-btn"
+              type="button"
+              class="hidden border border-tactical-line px-3 py-2 font-tech text-xs uppercase tracking-[0.14em] text-tactical-muted transition-colors hover:border-red-500/50 hover:text-red-400"
+              title="Vider la checklist"
+            >
+              ↺ Reset
+            </button>
           </div>
         </div>
+      </div>
 
-        <div id="gear-grid" class="mt-8 grid gap-8 md:grid-cols-2">
-          {sortedGearItems.map((item) => (
+      <div id="gear-grid" class="mt-8 grid gap-8 md:grid-cols-2">
+        {
+          sortedGearItems.map((item) => (
             <GearItem
               id={item.data.id}
               slug={item.slug}
@@ -123,213 +140,219 @@ const categories = ['Tous', ...categoryOrder];
               specs={item.data.specs}
               url={item.data.url}
             />
-          ))}
-        </div>
-      </section>
-    </main>
-
-    <SiteFooter />
-
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const STORAGE_KEY = 'bf-gear-checklist-v1';
-        const categoryOrderNode = document.querySelector<HTMLElement>('[data-category-order]');
-        const CATEGORY_ORDER: string[] = JSON.parse(categoryOrderNode?.getAttribute('data-category-order') || '["Administratif", "Atelier", "Campement", "Cuisine", "Hygiène", "Tech", "Vêtements"]');
-
-        // ── State ────────────────────────────────────────────────────
-        let isChecklistMode = false;
-        let activeFilter = 'all';
-        let checkedItems = new Set<string>(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'));
-
-        // ── DOM refs ─────────────────────────────────────────────────
-        const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.filter-btn'));
-        const gearCards = Array.from(document.querySelectorAll<HTMLElement>('#gear-grid .gear-item'));
-        const grid = document.getElementById('gear-grid');
-        const toggleModeBtn = document.getElementById('toggle-mode-btn');
-        const resetBtn = document.getElementById('reset-checklist-btn');
-
-        if (!grid || !toggleModeBtn || !resetBtn) {
-          return;
+          ))
         }
+      </div>
+    </section>
+  </main>
 
-        // ── Icons ────────────────────────────────────────────────────
-        const CHECKLIST_ICON = `<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="2" width="4.5" height="4.5" rx="0.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5h5M9 8h5M9 11.5h5"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l1 1 2-2.5"/></svg>`;
-        const GALLERY_ICON   = `<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="0.5"/><rect x="9" y="1" width="6" height="6" rx="0.5"/><rect x="1" y="9" width="6" height="6" rx="0.5"/><rect x="9" y="9" width="6" height="6" rx="0.5"/></svg>`;
+  <SiteFooter />
 
-        // ── Filter ───────────────────────────────────────────────────
-        const updateFilterButtons = (filter: string) => {
-            for (const btn of filterButtons) {
-            const active = btn.getAttribute('data-filter') === filter;
-            btn.setAttribute('aria-pressed', String(active));
-            btn.classList.toggle('border-tactical-accent', active);
-            btn.classList.toggle('bg-tactical-accent', active);
-            btn.classList.toggle('text-black', active);
-            btn.classList.toggle('border-tactical-line', !active);
-            btn.classList.toggle('text-tactical-text', !active);
-          }
-        };
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const STORAGE_KEY = 'bf-gear-checklist-v1'
+      const categoryOrderNode = document.querySelector<HTMLElement>('[data-category-order]')
+      const CATEGORY_ORDER: string[] = JSON.parse(
+        categoryOrderNode?.getAttribute('data-category-order') ||
+          '["Administratif", "Atelier", "Campement", "Cuisine", "Hygiène", "Tech", "Vêtements"]'
+      )
 
-        const updateCardFilterVisibility = (filter: string) => {
-          for (const card of gearCards) {
-            const cat = card.getAttribute('data-category');
-            card.classList.toggle('hidden', filter !== 'all' && cat !== filter);
-          }
-        };
+      // ── State ────────────────────────────────────────────────────
+      let isChecklistMode = false
+      let activeFilter = 'all'
+      let checkedItems = new Set<string>(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'))
 
-        const syncCardModeVisibility = () => {
-          for (const card of gearCards) {
-            const galleryView = card.querySelector<HTMLElement>('.gallery-view');
-            const checklistView = card.querySelector<HTMLElement>('.checklist-view');
+      // ── DOM refs ─────────────────────────────────────────────────
+      const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.filter-btn'))
+      const gearCards = Array.from(document.querySelectorAll<HTMLElement>('#gear-grid .gear-item'))
+      const grid = document.getElementById('gear-grid')
+      const toggleModeBtn = document.getElementById('toggle-mode-btn')
+      const resetBtn = document.getElementById('reset-checklist-btn')
 
-            if (galleryView) {
-              galleryView.style.display = isChecklistMode ? 'none' : '';
-            }
+      if (!grid || !toggleModeBtn || !resetBtn) {
+        return
+      }
 
-            if (checklistView) {
-              checklistView.style.display = isChecklistMode ? 'flex' : 'none';
-            }
-          }
-        };
+      // ── Icons ────────────────────────────────────────────────────
+      const CHECKLIST_ICON = `<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="2" width="4.5" height="4.5" rx="0.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5h5M9 8h5M9 11.5h5"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l1 1 2-2.5"/></svg>`
+      const GALLERY_ICON = `<svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="0.5"/><rect x="9" y="1" width="6" height="6" rx="0.5"/><rect x="1" y="9" width="6" height="6" rx="0.5"/><rect x="9" y="9" width="6" height="6" rx="0.5"/></svg>`
 
-        // ── Checklist ────────────────────────────────────────────────
-        const saveChecked = () =>
-          localStorage.setItem(STORAGE_KEY, JSON.stringify([...checkedItems]));
-
-        const refreshCardVisual = (card: HTMLElement) => {
-          const id      = card.getAttribute('data-gear-id') ?? '';
-          const checked = checkedItems.has(id);
-          card.classList.toggle('is-checked', checked);
-          const checklistView = card.querySelector('.checklist-view');
-          if (checklistView) checklistView.setAttribute('aria-checked', String(checked));
-        };
-
-        const toggleItem = (id: string) => {
-          checkedItems.has(id) ? checkedItems.delete(id) : checkedItems.add(id);
-          saveChecked();
-          const card = document.querySelector<HTMLElement>(`.gear-item[data-gear-id="${CSS.escape(id)}"]`);
-          if (card) refreshCardVisual(card);
-          window.dispatchEvent(new CustomEvent('gear:checklist-updated'));
-        };
-
-        // ── Reorganize by categories ─────────────────────────────
-        const reorganizeByCategories = () => {
-          const categories: string[] = CATEGORY_ORDER;
-          const itemsByCategory: Record<string, HTMLElement[]> = {};
-          
-          categories.forEach((cat: string) => {
-            itemsByCategory[cat] = [];
-          });
-          
-          gearCards.forEach(card => {
-            if (card.classList.contains('hidden')) {
-              return;
-            }
-            const category = card.getAttribute('data-category');
-            if (category && itemsByCategory[category]) {
-              itemsByCategory[category].push(card);
-            }
-          });
-          
-          grid.innerHTML = '';
-          categories.forEach((category: string) => {
-            if (itemsByCategory[category].length > 0) {
-              // Create category header
-              const header = document.createElement('div');
-              header.className = 'sticky top-0 z-10 border-b border-t border-tactical-line bg-tactical-panel/80 px-5 py-2 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent backdrop-blur-sm';
-              header.textContent = category;
-              grid.appendChild(header);
-              
-              // Add items for this category
-              itemsByCategory[category].forEach((card: HTMLElement) => {
-                grid.appendChild(card);
-              });
-            }
-          });
-        };
-
-        const restoreOriginalOrder = () => {
-          grid.innerHTML = '';
-          gearCards.forEach(card => {
-            grid.appendChild(card);
-          });
-        };
-
-        const applyFilter = (filter: string) => {
-          activeFilter = filter;
-          updateCardFilterVisibility(filter);
-          updateFilterButtons(filter);
-
-          if (isChecklistMode) {
-            reorganizeByCategories();
-          } else {
-            restoreOriginalOrder();
-          }
-
-          syncCardModeVisibility();
-        };
-
-        // ── Mode switch ──────────────────────────────────────────────
-        const setMode = (checklist: boolean) => {
-          isChecklistMode = checklist;
-          const progressBar = document.getElementById('mission-progress-bar');
-
-          if (checklist) {
-            grid.classList.remove('grid', 'md:grid-cols-2', 'gap-8');
-            grid.classList.add('flex', 'flex-col', 'gap-px');
-            toggleModeBtn.innerHTML = `${GALLERY_ICON}<span>Gallery Mode</span>`;
-            toggleModeBtn.classList.add('border-tactical-accent', 'text-tactical-accentSoft');
-            toggleModeBtn.classList.remove('border-tactical-line', 'text-tactical-muted');
-            resetBtn.classList.remove('hidden');
-            if (progressBar) progressBar.classList.remove('hidden');
-            gearCards.forEach(refreshCardVisual);
-            reorganizeByCategories();
-          } else {
-            grid.classList.remove('flex', 'flex-col', 'gap-px');
-            grid.classList.add('grid', 'md:grid-cols-2', 'gap-8');
-            toggleModeBtn.innerHTML = `${CHECKLIST_ICON}<span>Checklist Mode</span>`;
-            toggleModeBtn.classList.remove('border-tactical-accent', 'text-tactical-accentSoft');
-            toggleModeBtn.classList.add('border-tactical-line', 'text-tactical-muted');
-            resetBtn.classList.add('hidden');
-            if (progressBar) progressBar.classList.add('hidden');
-            restoreOriginalOrder();
-          }
-
-          updateCardFilterVisibility(activeFilter);
-          syncCardModeVisibility();
-
-          toggleModeBtn.setAttribute('aria-pressed', String(checklist));
-        };
-
-        // ── Events ───────────────────────────────────────────────────
+      // ── Filter ───────────────────────────────────────────────────
+      const updateFilterButtons = (filter: string) => {
         for (const btn of filterButtons) {
-          btn.addEventListener('click', () => applyFilter(btn.getAttribute('data-filter') ?? 'all'));
+          const active = btn.getAttribute('data-filter') === filter
+          btn.setAttribute('aria-pressed', String(active))
+          btn.classList.toggle('border-tactical-accent', active)
+          btn.classList.toggle('bg-tactical-accent', active)
+          btn.classList.toggle('text-black', active)
+          btn.classList.toggle('border-tactical-line', !active)
+          btn.classList.toggle('text-tactical-text', !active)
         }
+      }
 
-        toggleModeBtn.addEventListener('click', () => setMode(!isChecklistMode));
-
-        resetBtn.addEventListener('click', () => {
-          checkedItems.clear();
-          saveChecked();
-          gearCards.forEach(refreshCardVisual);
-          window.dispatchEvent(new CustomEvent('gear:checklist-updated'));
-        });
-
+      const updateCardFilterVisibility = (filter: string) => {
         for (const card of gearCards) {
-          card.querySelector('.checklist-view')?.addEventListener('click', () => {
-            toggleItem(card.getAttribute('data-gear-id') ?? '');
-          });
-          // Keyboard support
-          card.querySelector('.checklist-view')?.addEventListener('keydown', (e: Event) => {
-            const keyEvent = e as KeyboardEvent;
-            if (keyEvent.key === ' ' || keyEvent.key === 'Enter') {
-              keyEvent.preventDefault();
-              toggleItem(card.getAttribute('data-gear-id') ?? '');
-            }
-          });
+          const cat = card.getAttribute('data-category')
+          card.classList.toggle('hidden', filter !== 'all' && cat !== filter)
+        }
+      }
+
+      const syncCardModeVisibility = () => {
+        for (const card of gearCards) {
+          const galleryView = card.querySelector<HTMLElement>('.gallery-view')
+          const checklistView = card.querySelector<HTMLElement>('.checklist-view')
+
+          if (galleryView) {
+            galleryView.style.display = isChecklistMode ? 'none' : ''
+          }
+
+          if (checklistView) {
+            checklistView.style.display = isChecklistMode ? 'flex' : 'none'
+          }
+        }
+      }
+
+      // ── Checklist ────────────────────────────────────────────────
+      const saveChecked = () => localStorage.setItem(STORAGE_KEY, JSON.stringify([...checkedItems]))
+
+      const refreshCardVisual = (card: HTMLElement) => {
+        const id = card.getAttribute('data-gear-id') ?? ''
+        const checked = checkedItems.has(id)
+        card.classList.toggle('is-checked', checked)
+        const checklistView = card.querySelector('.checklist-view')
+        if (checklistView) checklistView.setAttribute('aria-checked', String(checked))
+      }
+
+      const toggleItem = (id: string) => {
+        checkedItems.has(id) ? checkedItems.delete(id) : checkedItems.add(id)
+        saveChecked()
+        const card = document.querySelector<HTMLElement>(
+          `.gear-item[data-gear-id="${CSS.escape(id)}"]`
+        )
+        if (card) refreshCardVisual(card)
+        window.dispatchEvent(new CustomEvent('gear:checklist-updated'))
+      }
+
+      // ── Reorganize by categories ─────────────────────────────
+      const reorganizeByCategories = () => {
+        const categories: string[] = CATEGORY_ORDER
+        const itemsByCategory: Record<string, HTMLElement[]> = {}
+
+        categories.forEach((cat: string) => {
+          itemsByCategory[cat] = []
+        })
+
+        gearCards.forEach((card) => {
+          if (card.classList.contains('hidden')) {
+            return
+          }
+          const category = card.getAttribute('data-category')
+          if (category && itemsByCategory[category]) {
+            itemsByCategory[category].push(card)
+          }
+        })
+
+        grid.innerHTML = ''
+        categories.forEach((category: string) => {
+          if (itemsByCategory[category].length > 0) {
+            // Create category header
+            const header = document.createElement('div')
+            header.className =
+              'sticky top-0 z-10 border-b border-t border-tactical-line bg-tactical-panel/80 px-5 py-2 font-tech text-xs uppercase tracking-[0.16em] text-tactical-accent backdrop-blur-sm'
+            header.textContent = category
+            grid.appendChild(header)
+
+            // Add items for this category
+            itemsByCategory[category].forEach((card: HTMLElement) => {
+              grid.appendChild(card)
+            })
+          }
+        })
+      }
+
+      const restoreOriginalOrder = () => {
+        grid.innerHTML = ''
+        gearCards.forEach((card) => {
+          grid.appendChild(card)
+        })
+      }
+
+      const applyFilter = (filter: string) => {
+        activeFilter = filter
+        updateCardFilterVisibility(filter)
+        updateFilterButtons(filter)
+
+        if (isChecklistMode) {
+          reorganizeByCategories()
+        } else {
+          restoreOriginalOrder()
         }
 
-        // ── Init ─────────────────────────────────────────────────────
-        applyFilter('all');
-      });
-    </script>
+        syncCardModeVisibility()
+      }
+
+      // ── Mode switch ──────────────────────────────────────────────
+      const setMode = (checklist: boolean) => {
+        isChecklistMode = checklist
+        const progressBar = document.getElementById('mission-progress-bar')
+
+        if (checklist) {
+          grid.classList.remove('grid', 'md:grid-cols-2', 'gap-8')
+          grid.classList.add('flex', 'flex-col', 'gap-px')
+          toggleModeBtn.innerHTML = `${GALLERY_ICON}<span>Gallery Mode</span>`
+          toggleModeBtn.classList.add('border-tactical-accent', 'text-tactical-accentSoft')
+          toggleModeBtn.classList.remove('border-tactical-line', 'text-tactical-muted')
+          resetBtn.classList.remove('hidden')
+          if (progressBar) progressBar.classList.remove('hidden')
+          gearCards.forEach(refreshCardVisual)
+          reorganizeByCategories()
+        } else {
+          grid.classList.remove('flex', 'flex-col', 'gap-px')
+          grid.classList.add('grid', 'md:grid-cols-2', 'gap-8')
+          toggleModeBtn.innerHTML = `${CHECKLIST_ICON}<span>Checklist Mode</span>`
+          toggleModeBtn.classList.remove('border-tactical-accent', 'text-tactical-accentSoft')
+          toggleModeBtn.classList.add('border-tactical-line', 'text-tactical-muted')
+          resetBtn.classList.add('hidden')
+          if (progressBar) progressBar.classList.add('hidden')
+          restoreOriginalOrder()
+        }
+
+        updateCardFilterVisibility(activeFilter)
+        syncCardModeVisibility()
+
+        toggleModeBtn.setAttribute('aria-pressed', String(checklist))
+      }
+
+      // ── Events ───────────────────────────────────────────────────
+      for (const btn of filterButtons) {
+        btn.addEventListener('click', () => applyFilter(btn.getAttribute('data-filter') ?? 'all'))
+      }
+
+      toggleModeBtn.addEventListener('click', () => setMode(!isChecklistMode))
+
+      resetBtn.addEventListener('click', () => {
+        checkedItems.clear()
+        saveChecked()
+        gearCards.forEach(refreshCardVisual)
+        window.dispatchEvent(new CustomEvent('gear:checklist-updated'))
+      })
+
+      for (const card of gearCards) {
+        card.querySelector('.checklist-view')?.addEventListener('click', () => {
+          toggleItem(card.getAttribute('data-gear-id') ?? '')
+        })
+        // Keyboard support
+        card.querySelector('.checklist-view')?.addEventListener('keydown', (e: Event) => {
+          const keyEvent = e as KeyboardEvent
+          if (keyEvent.key === ' ' || keyEvent.key === 'Enter') {
+            keyEvent.preventDefault()
+            toggleItem(card.getAttribute('data-gear-id') ?? '')
+          }
+        })
+      }
+
+      // ── Init ─────────────────────────────────────────────────────
+      applyFilter('all')
+    })
+  </script>
 </BaseLayout>

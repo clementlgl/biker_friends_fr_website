@@ -8,6 +8,7 @@ specs:
   autonomie: 1h30
 image: ../../../assets/gear/videoprojecteur.png
 ---
+
 Quoi de mieux que de regarder un bon film sous les étoiles après une journée de route ?
 Alors oui, c'est un peu gadget, mais c'est aussi ça l'esprit du voyage à moto : se faire plaisir et profiter de chaque moment !
 

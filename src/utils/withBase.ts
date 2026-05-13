@@ -4,13 +4,13 @@
  */
 export function withBase(path: string, baseUrl: string): string {
   // Si le path est vide, retourner le baseUrl
-  if (!path) return baseUrl;
-  
+  if (!path) return baseUrl
+
   // Si le path commence par /, le préfixer avec le baseUrl
   if (path.startsWith('/')) {
-    return baseUrl + path.slice(1);
+    return baseUrl + path.slice(1)
   }
-  
+
   // Sinon, retourner le path tel quel (pour les URLs externes)
-  return path;
+  return path
 }

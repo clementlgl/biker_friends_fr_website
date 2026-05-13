@@ -8,4 +8,5 @@ specs:
   autonomie: jusqu'à 16h
 image: ../../../assets/gear/lampe-frontale.png
 ---
+
 Préfère une lampe frontale à une lampe de poche pour garder les mains libres, que ce soit pour monter la tente ou cuisiner le soir. Rechargeable, elle se rechargera facilement sur la moto pendant la journée ou sur la batterie externe.

@@ -1,0 +1,44 @@
+# Build outputs (Astro)
+dist/
+.astro/
+out/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.min.js
+*.min.css
+
+# GPX files (pas besoin de formater)
+*.gpx
+
+# Images générées
+*.avif
+*.webp
+*.png
+*.jpg
+*.jpeg
+
+# Lock files (générés automatiquement)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Fichiers de logs
+*.log
+logs/

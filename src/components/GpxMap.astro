@@ -1,19 +1,20 @@
 ---
 interface Props {
-  fileUrl: string;
-  heightClass?: string;
+  fileUrl: string
+  heightClass?: string
 }
 
-const { fileUrl, heightClass = 'h-[420px]' } = Astro.props;
+const { fileUrl, heightClass = 'h-[420px]' } = Astro.props
 ---
 
 <div
   class:list={[
     'js-gpx-map w-full overflow-hidden border border-tactical-line bg-tactical-panel shadow-tactical',
-    heightClass
+    heightClass,
   ]}
   data-file-url={fileUrl}
-></div>
+>
+</div>
 
 <link
   rel="stylesheet"
@@ -24,35 +25,35 @@ const { fileUrl, heightClass = 'h-[420px]' } = Astro.props;
 
 <script>
   async function initGpxMaps() {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return
 
-    const mapNodes = document.querySelectorAll('.js-gpx-map[data-file-url]');
-    if (!mapNodes.length) return;
+    const mapNodes = document.querySelectorAll('.js-gpx-map[data-file-url]')
+    if (!mapNodes.length) return
 
-    const leafletModule = await import('leaflet');
-    const L = leafletModule.default;
+    const leafletModule = await import('leaflet')
+    const L = leafletModule.default
 
     // leaflet-gpx expects Leaflet on window.
-    window.L = L;
-    await import('leaflet-gpx');
+    window.L = L
+    await import('leaflet-gpx')
 
     mapNodes.forEach((node) => {
-      if (node.dataset.initialized === 'true') return;
+      if (node.dataset.initialized === 'true') return
 
-      const url = node.dataset.fileUrl;
-      if (!url) return;
+      const url = node.dataset.fileUrl
+      if (!url) return
 
-      node.dataset.initialized = 'true';
+      node.dataset.initialized = 'true'
 
       const map = L.map(node, {
         zoomControl: true,
-        preferCanvas: true
-      }).setView([46.2, 2.2], 5);
+        preferCanvas: true,
+      }).setView([46.2, 2.2], 5)
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 20,
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-      }).addTo(map);
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      }).addTo(map)
 
       const gpxLayer = new L.GPX(url, {
         async: true,
@@ -60,20 +61,20 @@ const { fileUrl, heightClass = 'h-[420px]' } = Astro.props;
           color: '#00A3C4',
           opacity: 0.95,
           weight: 4,
-          lineJoin: 'round'
-        }
-      });
+          lineJoin: 'round',
+        },
+      })
 
       gpxLayer
         .on('loaded', (event) => {
-          const bounds = event?.target?.getBounds?.();
+          const bounds = event?.target?.getBounds?.()
           if (bounds) {
-            map.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 });
+            map.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 })
           }
         })
-        .addTo(map);
-    });
+        .addTo(map)
+    })
   }
 
-  initGpxMaps();
+  initGpxMaps()
 </script>

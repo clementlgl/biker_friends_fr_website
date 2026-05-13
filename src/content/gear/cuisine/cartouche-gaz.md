@@ -8,4 +8,5 @@ specs:
   poids: 100g
 image: ../../../assets/gear/cartouche-gaz.png
 ---
+
 Indispensable pour cuisiner partout.
