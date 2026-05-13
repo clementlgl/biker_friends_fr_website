@@ -131,7 +131,7 @@ const categories = ['Tous', ...categoryOrder]
           sortedGearItems.map((item) => (
             <GearItem
               id={item.data.id}
-              slug={item.slug}
+              routeId={item.id}
               titre={item.data.titre}
               marque={item.data.marque}
               categorie={item.data.categorie}

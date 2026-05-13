@@ -9,7 +9,7 @@ import type { ImageMetadata } from 'astro'
 
 export interface Props {
   id: string
-  slug: string
+  routeId: string
   titre: string
   marque?: string
   categorie: string
@@ -21,8 +21,8 @@ export interface Props {
 }
 
 const base = import.meta.env.BASE_URL
-const { id, slug, titre, marque, categorie, description, image, specs = {}, url } = Astro.props
-const detailHref = `${base}gear/${slug}`
+const { id, routeId, titre, marque, categorie, description, image, specs = {}, url } = Astro.props
+const detailHref = `${base}gear/${routeId}`
 const specEntries = specs ? Object.entries(specs).slice(0, 2) : []
 const isAssetImage = typeof image !== 'string'
 ---

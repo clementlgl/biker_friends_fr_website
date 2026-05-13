@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets'
-import { getCollection } from 'astro:content'
+import { getCollection, render } from 'astro:content'
 import type { ImageMetadata } from 'astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import SiteHeader from '../../components/SiteHeader.astro'
@@ -11,7 +11,7 @@ const base = import.meta.env.BASE_URL
 export async function getStaticPaths() {
   const items = await getCollection('gear')
   return items.map((item) => ({
-    params: { id: item.slug },
+    params: { id: item.id },
     props: { item },
   }))
 }
@@ -25,7 +25,7 @@ const { titre, marque, categorie, description, proTip, image, specs, url } = ite
 const specEntries = specs ? Object.entries(specs) : []
 const isAssetImage = typeof image !== 'string'
 
-const { Content } = await item.render()
+const { Content } = await render(item)
 ---
 
 <BaseLayout title={`${titre} | Matériel | Biker Friends`}>

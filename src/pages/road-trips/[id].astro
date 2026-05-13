@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets'
-import { getCollection } from 'astro:content'
+import { getCollection, render } from 'astro:content'
 import GpxMap from '../../components/GpxMap.astro'
 import SiteHeader from '../../components/SiteHeader.astro'
 import { distanceFromGpx } from '../../utils/gpxDistance'
@@ -34,7 +34,7 @@ const heroImageIsAsset = typeof image !== 'string'
 const stageOneDistance = Math.ceil((distance * 0.52) / 10) * 10
 const stageTwoDistance = Math.max(0, distance - stageOneDistance)
 
-const { Content } = await voyage.render()
+const { Content } = await render(voyage)
 ---
 
 <BaseLayout title={`${titre} | Biker Friends`}>
