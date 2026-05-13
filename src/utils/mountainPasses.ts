@@ -72,8 +72,26 @@ const PASS_ALTITUDES: Record<string, number> = {
   'Col Agnel': 2748,
   'Colle Finestra': 2278,
   'Colle dell\'Agnello': 2744,
-  'Gavia Pass': 2621,
+  'Gavia Pass': 2618,
   'Passo del Tonale': 1883,
+  'Passo Furcia': 1759,
+  'Passo Lavazé': 1805,
+  'Passo Nigra': 1367,
+  'Passo Falzarego': 2105,
+  'Passo Monte Croce Comelico': 1636,
+  'Passo Palade': 1512,
+  'Passo Stalle': 2052,
+  'di Val d\'Ega e Passo Costalunga': 1745,
+  'Passo Pordoi': 2239,
+  'Passo Mendola': 1662,
+  'del Passo di Giovo': 2093,
+  'Passo dello Stelvio': 2758,
+  'Passo del Rombo': 2474,
+  'Passo Valparola': 2168,
+  'Passo Erbe': 1887,
+  'Passo Sella': 2218,
+  'del Passo Gardena': 2136,
+  'Passo Campolongo': 1875
 };
 
 /**
@@ -915,6 +933,86 @@ export async function fetchInforouteHaPyPasses(): Promise<MountainPass[]> {
   }
 }
 
+// Fetch passes from the South Tyrol / Provincia Bolzano traffic feed
+export async function fetchProvinceBZPasses(): Promise<MountainPass[]> {
+  try {
+    const ts = Math.floor(Date.now() / 1000);
+    const url = `https://static-verkehr.provinz.bz.it/publications/traffic/traffic.json?_=${ts}`;
+
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Province BZ traffic API error:', response.status);
+      return [];
+    }
+
+    const items = await response.json() as Array<{
+      tycodeValue?: string;
+      publishDateTime?: string;
+      subTycodeValue?: string;
+      subTycodeDe?: string;
+      subTycodeIt?: string;
+      placeDe?: string;
+      placeIt?: string;
+      messageId?: string;
+      messageStreetInternetDescDe?: string;
+      messageStreetInternetDescIt?: string;
+      messageStreetWapDescDe?: string;
+      messageStreetWapDescIt?: string;
+      messageZoneDescDe?: string;
+      messageZoneDescIt?: string;
+      messageGradDescDe?: string;
+      messageGradDescIt?: string;
+      X?: number;
+      Y?: number;
+    }>;
+
+    if (!Array.isArray(items)) {
+      console.error('Unexpected Province BZ API response format');
+      return [];
+    }
+
+    return items
+      .filter((it) => String(it.tycodeValue ?? '').trim() === 'PÄSSE')
+      .map((it) => {
+        const name =
+          it.messageStreetWapDescIt ||
+          'Unknown Pass';
+
+        const statusText = `${it.subTycodeValue ?? ''} ${it.messageGradDescDe ?? ''} ${it.messageGradDescIt ?? ''}`.toLowerCase();
+        const messageGradIt = String(it.messageGradDescIt ?? '').toLowerCase();
+        let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT';
+        // Treat specific Italian phrases as CLOSED
+        if (messageGradIt.includes('traffico bloccato')) status = 'CLOSED';
+        else if (messageGradIt.includes('percorribile liberamente')) status = 'OPEN';
+        else if (messageGradIt.includes('rallentamenti')) status = 'ALERT';
+        else status = 'PARTIAL';
+
+        const conditions = it.placeDe ? [it.placeDe] : [];
+
+        return {
+          id: `bz-${String(it.messageId ?? name).replace(/\s+/g, '-').toLowerCase()}`,
+          name,
+          altitude: PASS_ALTITUDES[name] || 0,
+          region: it.messageZoneDescDe || it.messageZoneDescIt || 'Südtirol / Alto Adige',
+          department: 'BZ',
+          status,
+          updated: it.publishDateTime ? new Date(it.publishDateTime) : new Date(),
+          source: 'traffic.province.bz.it',
+          coordinates: [Number(it.Y ?? 0), Number(it.X ?? 0)] as [number, number],
+          conditions: conditions.length ? conditions : undefined
+        } as MountainPass;
+      });
+  } catch (error) {
+    console.error('Failed to fetch Province BZ traffic passes:', error);
+    return [];
+  }
+}
+
 export async function getAllMountainPasses(): Promise<MountainPass[]> {
   try {
     const passes = await Promise.all([
@@ -928,6 +1026,7 @@ export async function getAllMountainPasses(): Promise<MountainPass[]> {
     //   fetchInforoute31Passes(), // 31
       fetchInforoute06Passes(), // 06
       fetchHautesAlpesPasses(), // 05
+      fetchProvinceBZPasses(), // BZ
     ]);
 
     const merged = passes.flat();
