@@ -12,6 +12,7 @@ export interface MountainPass {
   direction?: 'UP' | 'DOWN' | 'BOTH';
   conditions?: string[];
   updated?: Date;
+  plannedOpening?: string | Date;
   source?: string;
   coordinates?: [number, number]; // [latitude, longitude]
   department?: string; // two-digit department code, e.g. '73'
@@ -931,6 +932,8 @@ export async function fetchInforouteHaPyPasses(): Promise<MountainPass[]> {
         else if (lower.includes('ouvert') || lower.includes('ouverture')) status = 'OPEN';
         else if (lower.includes('partiel') || lower.includes('alternat') || lower.includes('sens unique') || lower.includes('une voie')) status = 'PARTIAL';
 
+        //  "date_fin_evenement": "2026-05-31 18:00:00",
+        const plannedOpening = it.date_fin_evenement ? new Date(it.date_fin_evenement) : null;
         const lat = it.lat ? Number(String(it.lat).replace(',', '.')) : 0;
         const lon = it.lng ? Number(String(it.lng).replace(',', '.')) : 0;
         const updated = it.date_debut ? new Date(it.date_debut) : new Date();
@@ -943,6 +946,7 @@ export async function fetchInforouteHaPyPasses(): Promise<MountainPass[]> {
           department: '65',
           status,
           updated,
+          plannedOpening,
           source: 'inforoute.ha-py.fr',
           country: 'France',
           massif: 'Pyrénées',
@@ -1037,6 +1041,133 @@ export async function fetchProvinceBZPasses(): Promise<MountainPass[]> {
   }
 }
 
+type PiemontePassState = 'Open' | 'Closed' | `Closed from ${string}` | 'Unknown';
+
+function computePiemontePassState(closedFrom: number | null, closedUntil: number | null, now: number): PiemontePassState {
+  if (closedFrom == null && closedUntil == null) return 'Open';
+
+  if (closedFrom != null && now < closedFrom) {
+    return `Closed from ${new Date(closedFrom).toISOString()}`;
+  }
+
+  if (closedFrom != null && now >= closedFrom && (closedUntil == null || now < closedUntil)) {
+    return 'Closed';
+  }
+
+  if (closedUntil != null && now >= closedUntil) {
+    return 'Open';
+  }
+
+  return 'Unknown';
+}
+
+// Fetch passes from muoversinpiemonte Next.js data route discovered dynamically from HTML
+export async function fetchMuoversinPiemontePasses(): Promise<MountainPass[]> {
+  try {
+    const pageUrl = 'https://www.muoversinpiemonte.it/en/passes';
+    const pageResponse = await fetch(pageUrl, {
+      headers: {
+        Accept: 'text/html',
+      }
+    });
+
+    if (!pageResponse.ok) {
+      console.error('Muoversin Piemonte page fetch error:', pageResponse.status);
+      return [];
+    }
+
+    const rawHtml = await pageResponse.text();
+    const normalizedHtml = rawHtml
+      .replace(/\\u002F/g, '/')
+      .replace(/\\\//g, '/');
+
+    const routeMatch = normalizedHtml.match(/\/_next\/data\/[^"'<>\s]+\/en\/passes\.json/);
+    let dataUrl: string | null = routeMatch ? new URL(routeMatch[0], pageUrl).toString() : null;
+
+    if (!dataUrl) {
+      const nextDataMatch = rawHtml.match(/<script\s+id="__NEXT_DATA__"\s+type="application\/json">([\s\S]*?)<\/script>/i);
+      if (nextDataMatch && nextDataMatch[1]) {
+        try {
+          const nextData = JSON.parse(nextDataMatch[1]) as { buildId?: string };
+          if (nextData.buildId) {
+            dataUrl = new URL(`/_next/data/${nextData.buildId}/en/passes.json`, pageUrl).toString();
+          }
+        } catch (parseError) {
+          console.error('Muoversin Piemonte __NEXT_DATA__ parse error:', parseError);
+        }
+      }
+    }
+
+    if (!dataUrl) {
+      console.error('Muoversin Piemonte Next.js data route/buildId not found in page HTML');
+      return [];
+    }
+
+    const dataResponse = await fetch(dataUrl, {
+      headers: {
+        Accept: 'application/json',
+      }
+    });
+
+    if (!dataResponse.ok) {
+      console.error('Muoversin Piemonte JSON fetch error:', dataResponse.status);
+      return [];
+    }
+
+    const payload = await dataResponse.json() as {
+      pageProps?: {
+        passData?: Array<{
+          id?: number;
+          name?: string;
+          longitude?: number;
+          latitude?: number;
+          closed_from?: number | null;
+          closed_until?: number | null;
+        }>;
+      };
+    };
+
+    const passData = payload.pageProps?.passData;
+    if (!Array.isArray(passData)) {
+      console.error('Unexpected Muoversin Piemonte JSON format');
+      return [];
+    }
+
+    const now = Date.now();
+
+    return passData.map((pass) => {
+      const state = computePiemontePassState(pass.closed_from ?? null, pass.closed_until ?? null, now);
+
+      const status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' =
+        state === 'Open' ? 'OPEN'
+        : state === 'Closed' ? 'CLOSED'
+        : state.startsWith('Closed from ') ? 'ALERT'
+        : 'ALERT';
+
+      const plannedOpening = pass.closed_until != null ? new Date(pass.closed_until) : undefined;
+
+      return {
+        id: `piemonte-${String(pass.id ?? pass.name ?? 'unknown').replace(/\s+/g, '-').toLowerCase()}`,
+        name: pass.name || 'Unknown Pass',
+        altitude: PASS_ALTITUDES[pass.name || ''] || 0,
+        region: 'Piémont',
+        department: 'PMN',
+        status,
+        updated: new Date(now),
+        plannedOpening,
+        source: 'muoversinpiemonte.it',
+        country: 'Italie',
+        massif: 'Alpes piémontaises',
+        coordinates: [Number(pass.latitude ?? 0), Number(pass.longitude ?? 0)] as [number, number],
+        conditions: [state]
+      } as MountainPass;
+    });
+  } catch (error) {
+    console.error('Failed to fetch Muoversin Piemonte passes:', error);
+    return [];
+  }
+}
+
 export async function getAllMountainPasses(): Promise<MountainPass[]> {
   try {
     const passes = await Promise.all([
@@ -1051,6 +1182,7 @@ export async function getAllMountainPasses(): Promise<MountainPass[]> {
       fetchInforoute06Passes(), // 06
       fetchHautesAlpesPasses(), // 05
       fetchProvinceBZPasses(), // BZ
+      fetchMuoversinPiemontePasses(), // Piemonte
     ]);
 
     const merged = passes.flat();
