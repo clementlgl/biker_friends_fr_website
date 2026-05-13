@@ -7,7 +7,7 @@ export interface MountainPass {
   id: string;
   name: string;
   altitude: number;
-  region: string;
+  region?: string;
   status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT';
   direction?: 'UP' | 'DOWN' | 'BOTH';
   conditions?: string[];
@@ -203,6 +203,31 @@ const INFOROUTE06_STATUS_MAP: Record<string, 'OPEN' | 'CLOSED' | 'PARTIAL' | 'AL
   'partial': 'PARTIAL',
   'partiel': 'PARTIAL',
 };
+
+const SWISS_STATUS_BY_CAT: Record<number, 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT'> = {
+  41: 'CLOSED',
+  43: 'PARTIAL',
+  44: 'OPEN'
+};
+
+function parseSwissDateTime(value: unknown): Date | undefined {
+  if (!value) return undefined;
+  const raw = String(value).trim();
+  const match = raw.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/);
+  if (!match) return undefined;
+
+  const [, dd, mm, yyyy, hh, min, sec] = match;
+  const parsed = new Date(
+    Number(yyyy),
+    Number(mm) - 1,
+    Number(dd),
+    Number(hh),
+    Number(min),
+    Number(sec ?? '0')
+  );
+
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
 
 /**
  * Fetch mountain pass data from Hautes-Alpes API
@@ -1168,6 +1193,87 @@ export async function fetchMuoversinPiemontePasses(): Promise<MountainPass[]> {
   }
 }
 
+// Fetch Swiss passes from trafficintelligence.ch.
+// Parameters p1/p2/p3 (currently 2/5/2) may affect filtering/aggregation on provider side.
+export async function fetchSwissTrafficPasses(): Promise<MountainPass[]> {
+  try {
+    const minLat = 44.80879727733239;
+    const minLng = 5.855911300000002;
+    const maxLat = 48.56870178562207;
+    const maxLng = 11.24283084896724;
+    const categories = '41,43,44';
+    const p1 = 2;
+    const p2 = 5;
+    const p3 = 2;
+
+    const url = `https://trafficmaptcs.trafficintelligence.ch/api/event/GetEventsTrafficApi/${minLat},${minLng},${maxLat},${maxLng}/${categories}/${p1}/${p2}/${p3}`;
+
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        Referer: 'https://www.tcs.ch/'
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Swiss traffic API error:', response.status);
+      return [];
+    }
+
+    const data = await response.json() as {
+      Entity?: Array<{
+        Id?: string;
+        Cat?: number;
+        Name?: string;
+        Pos?: {
+          Lat?: number;
+          Lng?: number;
+        };
+        Dic?: {
+          LastUpdated?: string;
+          Description?: string;
+          TimeStart?: string | null;
+          TimeStop?: string | null;
+        };
+      }>;
+    };
+
+    if (!Array.isArray(data.Entity)) {
+      console.error('Unexpected Swiss traffic API response format');
+      return [];
+    }
+
+    return data.Entity
+      .filter((event) => typeof event?.Cat === 'number' && SWISS_STATUS_BY_CAT[event.Cat] !== undefined)
+      .map((event) => {
+        const cat = Number(event.Cat);
+        const dic = event.Dic || {};
+        const status = SWISS_STATUS_BY_CAT[cat] || 'ALERT';
+        const updated = parseSwissDateTime(dic.LastUpdated) || new Date();
+        const plannedOpening = parseSwissDateTime(dic.TimeStop || undefined);
+
+        return {
+          id: `swiss-${String(event.Id || event.Name || 'unknown').replace(/\s+/g, '-').toLowerCase()}`,
+          name: event.Name || 'Unknown Pass',
+          altitude: 0,
+          region: undefined,
+          department: 'CH',
+          status,
+          updated,
+          plannedOpening,
+          source: 'www.tcs.ch',
+          country: 'Suisse',
+          massif: 'Alpes',
+          coordinates: [Number(event.Pos?.Lat ?? 0), Number(event.Pos?.Lng ?? 0)] as [number, number],
+          conditions: dic.Description ? [dic.Description] : undefined
+        } as MountainPass;
+      });
+  } catch (error) {
+    console.error('Failed to fetch Swiss traffic passes:', error);
+    return [];
+  }
+}
+
 export async function getAllMountainPasses(): Promise<MountainPass[]> {
   try {
     const passes = await Promise.all([
@@ -1183,6 +1289,7 @@ export async function getAllMountainPasses(): Promise<MountainPass[]> {
       fetchHautesAlpesPasses(), // 05
       fetchProvinceBZPasses(), // BZ
       fetchMuoversinPiemontePasses(), // Piemonte
+      fetchSwissTrafficPasses(), // Switzerland
     ]);
 
     const merged = passes.flat();
