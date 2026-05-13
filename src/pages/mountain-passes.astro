@@ -159,7 +159,7 @@ geoEntries.forEach(e => e.massifs.sort((a, b) => a.localeCompare(b)));
             <div data-massif-group={entry.country} class="hidden flex-wrap items-center gap-2">
               <button
                 data-massif="ALL"
-                class="px-3 py-1.5 font-tech text-xs uppercase font-semibold rounded transition-colors bg-tactical-accent/70 text-white"
+                class="px-3 py-1.5 font-tech text-xs uppercase font-semibold rounded transition-colors border border-tactical-line text-tactical-text hover:border-tactical-accent"
               >
                 Tous les massifs
               </button>
@@ -457,19 +457,23 @@ geoEntries.forEach(e => e.massifs.sort((a, b) => a.localeCompare(b)));
       // ── Massif filter (Level 2) ───────────────────────────────────────────
       document.addEventListener('click', (e) => {
         const target = e.target;
-        if (!target || !target.hasAttribute || !target.hasAttribute('data-massif')) return;
-        const selected = target.getAttribute('data-massif') || 'ALL';
+        if (!target) return;
+
+        const massifButton = target.closest?.('[data-massif]');
+        if (!massifButton) return;
+
+        const selected = massifButton.getAttribute('data-massif') || 'ALL';
         currentMassif = selected;
 
         // Update massif button styles within same group
-        const group = target.closest('[data-massif-group]');
+        const group = massifButton.closest('[data-massif-group]');
         if (group) {
           group.querySelectorAll('[data-massif]').forEach(b => {
             b.classList.remove('bg-tactical-accent', 'text-white');
             b.classList.add('border', 'border-tactical-line', 'text-tactical-text');
           });
-          target.classList.add('bg-tactical-accent', 'text-white');
-          target.classList.remove('border', 'border-tactical-line', 'text-tactical-text');
+          massifButton.classList.add('bg-tactical-accent', 'text-white');
+          massifButton.classList.remove('border', 'border-tactical-line', 'text-tactical-text');
         }
 
         applyFilters();
