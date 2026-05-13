@@ -7,4 +7,5 @@ specs:
   contenance: 0,8L
 image: ../../../assets/gear/gourde.png
 ---
+
 Avoir de l'eau potable fraîche à portée de main est essentiel, surtout lors des journées chaudes.

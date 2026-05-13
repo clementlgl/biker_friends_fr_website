@@ -4,12 +4,12 @@
  */
 
 export interface ImageProps {
-  src: string;
-  alt: string;
-  loading?: 'lazy' | 'eager';
-  decoding?: 'async' | 'sync' | 'auto';
-  widths?: number[];
-  sizes?: string;
+  src: string
+  alt: string
+  loading?: 'lazy' | 'eager'
+  decoding?: 'async' | 'sync' | 'auto'
+  widths?: number[]
+  sizes?: string
 }
 
 /**
@@ -18,7 +18,7 @@ export interface ImageProps {
 export function isAssetImage(src: string): boolean {
   // Les images dans public/ commencent par /
   // Les images dans src/assets/ sont des imports
-  return !src.startsWith('/');
+  return !src.startsWith('/')
 }
 
 /**
@@ -32,7 +32,7 @@ export const imageConfigs = {
     widths: [640, 1024, 1280, 1536],
     sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw',
   },
-  
+
   // Cartes de voyage - Galerie
   card: {
     loading: 'lazy',
@@ -40,7 +40,7 @@ export const imageConfigs = {
     widths: [400, 600, 800, 1000],
     sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw',
   },
-  
+
   // Équipement - Galerie
   gear: {
     loading: 'lazy',
@@ -48,7 +48,7 @@ export const imageConfigs = {
     widths: [700, 900],
     sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
   },
-  
+
   // Petites images - Thumbnails
   thumbnail: {
     loading: 'lazy',
@@ -56,10 +56,10 @@ export const imageConfigs = {
     widths: [600],
     sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
   },
-};
+}
 
 /**
  * Format d'export des images optimisées
  * WebP principal avec fallback JPEG
  */
-export const imageFormats = ['webp', 'jpeg'] as const;
+export const imageFormats = ['webp', 'jpeg'] as const

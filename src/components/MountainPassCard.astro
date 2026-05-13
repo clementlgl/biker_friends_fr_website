@@ -1,11 +1,11 @@
 ---
-import type { MountainPass } from '../utils/mountainPasses';
+import type { MountainPass } from '../utils/mountainPasses'
 
 interface Props {
-  pass: MountainPass;
+  pass: MountainPass
 }
 
-const { pass } = Astro.props;
+const { pass } = Astro.props
 
 // Status colors and labels
 const statusConfig = {
@@ -13,29 +13,29 @@ const statusConfig = {
     color: '#00A3C4',
     label: 'OUVERT',
     bg: 'bg-cyan-500/10',
-    text: 'text-cyan-600 dark:text-cyan-400'
+    text: 'text-cyan-600 dark:text-cyan-400',
   },
   CLOSED: {
     color: '#EF4444',
     label: 'FERMÉ',
     bg: 'bg-red-500/10',
-    text: 'text-red-600 dark:text-red-400'
+    text: 'text-red-600 dark:text-red-400',
   },
   PARTIAL: {
     color: '#F59E0B',
     label: 'PARTIEL',
     bg: 'bg-amber-500/10',
-    text: 'text-amber-600 dark:text-amber-400'
+    text: 'text-amber-600 dark:text-amber-400',
   },
   ALERT: {
     color: '#F59E0B',
     label: 'ALERTE',
     bg: 'bg-amber-500/10',
-    text: 'text-amber-600 dark:text-amber-400'
-  }
-};
+    text: 'text-amber-600 dark:text-amber-400',
+  },
+}
 
-const config = statusConfig[pass.status];
+const config = statusConfig[pass.status]
 const countryEmojis: Record<string, string> = {
   France: '🇫🇷',
   Italie: '🇮🇹',
@@ -46,25 +46,34 @@ const countryEmojis: Record<string, string> = {
   Andorre: '🇦🇩',
   Monaco: '🇲🇨',
   Slovénie: '🇸🇮',
-};
-const countryLabel = pass.country || '';
-const countryEmoji = countryEmojis[countryLabel] || '';
-const lastUpdate = pass.updated ? new Date(pass.updated).toLocaleTimeString('fr-FR', { 
-  hour: '2-digit', 
-  minute: '2-digit' 
-}) : '--:--';
+}
+const countryLabel = pass.country || ''
+const countryEmoji = countryEmojis[countryLabel] || ''
+const lastUpdate = pass.updated
+  ? new Date(pass.updated).toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  : '--:--'
 const plannedOpeningLabel = pass.plannedOpening
   ? new Date(pass.plannedOpening).toLocaleString('fr-FR', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
-  : null;
+  : null
 ---
 
-<div class="group relative border border-tactical-line rounded-lg bg-tactical-panel p-5 transition-all hover:border-tactical-accent hover:shadow-accent overflow-hidden" data-pass-name={pass.name} data-pass-region={pass.region} data-pass-department={pass.department} data-pass-country={pass.country || ''} data-pass-massif={pass.massif || ''}>
+<div
+  class="group relative border border-tactical-line rounded-lg bg-tactical-panel p-5 transition-all hover:border-tactical-accent hover:shadow-accent overflow-hidden"
+  data-pass-name={pass.name}
+  data-pass-region={pass.region}
+  data-pass-department={pass.department}
+  data-pass-country={pass.country || ''}
+  data-pass-massif={pass.massif || ''}
+>
   <!-- Top section with status badge -->
   <div class="flex items-start justify-between gap-3 mb-4">
     <div class="flex-1">
@@ -74,14 +83,18 @@ const plannedOpeningLabel = pass.plannedOpening
       <p class="mt-1 text-xs font-tech text-tactical-muted uppercase">
         {pass.region}
       </p>
-      {countryLabel && (
-        <p class="mt-1 text-xs font-tech text-tactical-muted uppercase flex items-center gap-1">
-          {countryEmoji && <span aria-hidden="true">{countryEmoji}</span>}
-          <span>{countryLabel}</span>
-        </p>
-      )}
+      {
+        countryLabel && (
+          <p class="mt-1 text-xs font-tech text-tactical-muted uppercase flex items-center gap-1">
+            {countryEmoji && <span aria-hidden="true">{countryEmoji}</span>}
+            <span>{countryLabel}</span>
+          </p>
+        )
+      }
     </div>
-    <div class={`${config.bg} ${config.text} px-3 py-1 rounded text-xs font-tech uppercase font-semibold whitespace-nowrap`}>
+    <div
+      class={`${config.bg} ${config.text} px-3 py-1 rounded text-xs font-tech uppercase font-semibold whitespace-nowrap`}
+    >
       {config.label}
     </div>
   </div>
@@ -90,27 +103,36 @@ const plannedOpeningLabel = pass.plannedOpening
   <div class="grid grid-cols-2 gap-3 mb-4 pb-4">
     <div>
       <p class="text-xs font-tech text-tactical-muted uppercase tracking-wider">Altitude</p>
-      <p class="mt-1 font-display text-xl text-tactical-text">{pass.altitude.toLocaleString('fr-FR')} m</p>
-      {pass.plannedOpening && (
-        <div class="mt-2">
-          <p class="text-xs font-tech text-tactical-muted uppercase tracking-wider">Ouverture prévue</p>
-          <p class="mt-1 text-sm font-display text-tactical-text">{plannedOpeningLabel}</p>
-        </div>
-      )}
+      <p class="mt-1 font-display text-xl text-tactical-text">
+        {pass.altitude.toLocaleString('fr-FR')} m
+      </p>
+      {
+        pass.plannedOpening && (
+          <div class="mt-2">
+            <p class="text-xs font-tech text-tactical-muted uppercase tracking-wider">
+              Ouverture prévue
+            </p>
+            <p class="mt-1 text-sm font-display text-tactical-text">{plannedOpeningLabel}</p>
+          </div>
+        )
+      }
     </div>
-    {pass.info && pass.info.length > 0 && (
-      <div>
-        <p class="text-xs font-tech text-tactical-muted uppercase tracking-wider">Info</p>
-        <div class="mt-1 flex flex-wrap gap-1">
-          {pass.info.map(info => (
-            <span class="inline-block px-2 py-0.5 bg-tactical-panelSoft rounded text-xs text-tactical-muted uppercase">
-              {info}
-            </span>
-          ))}
+    {
+      pass.info && pass.info.length > 0 && (
+        <div>
+          <p class="text-xs font-tech text-tactical-muted uppercase tracking-wider">Info</p>
+          <div class="mt-1 flex flex-wrap gap-1">
+            {pass.info.map((info) => (
+              <span class="inline-block px-2 py-0.5 bg-tactical-panelSoft rounded text-xs text-tactical-muted uppercase">
+                {info}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
-    )}
+      )
+    }
   </div>
 
-  <div class="absolute top-0 left-0 h-1 bg-linear-to-r" style={`background-color: ${config.color}`}></div>
+  <div class="absolute top-0 left-0 h-1 bg-linear-to-r" style={`background-color: ${config.color}`}>
+  </div>
 </div>

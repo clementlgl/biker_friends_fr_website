@@ -1,10 +1,10 @@
 ---
 export interface Props {
-  total: number;
-  storageKey?: string;
+  total: number
+  storageKey?: string
 }
 
-const { total, storageKey = 'bf-gear-checklist-v1' } = Astro.props;
+const { total, storageKey = 'bf-gear-checklist-v1' } = Astro.props
 ---
 
 <aside
@@ -25,9 +25,7 @@ const { total, storageKey = 'bf-gear-checklist-v1' } = Astro.props;
         <span id="mpb-count" class="font-tech text-[10px] tabular-nums text-tactical-muted">
           0 / {total}
         </span>
-        <span id="mpb-pct" class="font-tech text-sm tabular-nums text-tactical-accent">
-          0%
-        </span>
+        <span id="mpb-pct" class="font-tech text-sm tabular-nums text-tactical-accent"> 0% </span>
       </div>
     </div>
 
@@ -38,7 +36,8 @@ const { total, storageKey = 'bf-gear-checklist-v1' } = Astro.props;
         id="mpb-fill"
         class="absolute left-0 top-0 h-full origin-left bg-tactical-accent transition-[width] duration-500 ease-out"
         style="width: 0%"
-      ></div>
+      >
+      </div>
 
       <!-- Cursor: diamond at the tip -->
       <div
@@ -49,7 +48,8 @@ const { total, storageKey = 'bf-gear-checklist-v1' } = Astro.props;
         <div
           class="h-2.5 w-2.5 rotate-45 border border-tactical-accent bg-[#121212]"
           style="box-shadow: 0 0 6px rgba(0,163,196,0.5)"
-        ></div>
+        >
+        </div>
       </div>
     </div>
 
@@ -65,17 +65,27 @@ const { total, storageKey = 'bf-gear-checklist-v1' } = Astro.props;
 
 <style>
   @keyframes mpb-glow-pulse {
-    0%, 100% {
-      box-shadow: 0 0 6px rgba(0, 163, 196, 0.5), 0 0 16px rgba(0, 163, 196, 0.25);
+    0%,
+    100% {
+      box-shadow:
+        0 0 6px rgba(0, 163, 196, 0.5),
+        0 0 16px rgba(0, 163, 196, 0.25);
     }
     50% {
-      box-shadow: 0 0 14px rgba(0, 163, 196, 0.9), 0 0 32px rgba(0, 163, 196, 0.5);
+      box-shadow:
+        0 0 14px rgba(0, 163, 196, 0.9),
+        0 0 32px rgba(0, 163, 196, 0.5);
     }
   }
 
   @keyframes mpb-dot-blink {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.2; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
   }
 
   #mpb-fill.is-complete {
@@ -84,52 +94,52 @@ const { total, storageKey = 'bf-gear-checklist-v1' } = Astro.props;
   }
 
   #mpb-dot.is-active {
-    background-color: #00A3C4;
+    background-color: #00a3c4;
     animation: mpb-dot-blink 1.4s ease-in-out infinite;
   }
 </style>
 
 <script define:vars={{ total, storageKey }}>
-  const fill       = document.getElementById('mpb-fill');
-  const cursor     = document.getElementById('mpb-cursor');
-  const pctEl      = document.getElementById('mpb-pct');
-  const countEl    = document.getElementById('mpb-count');
-  const dot        = document.getElementById('mpb-dot');
-  const completeEl = document.getElementById('mpb-complete-msg');
+  const fill = document.getElementById('mpb-fill')
+  const cursor = document.getElementById('mpb-cursor')
+  const pctEl = document.getElementById('mpb-pct')
+  const countEl = document.getElementById('mpb-count')
+  const dot = document.getElementById('mpb-dot')
+  const completeEl = document.getElementById('mpb-complete-msg')
 
   function update() {
-    const checked = JSON.parse(localStorage.getItem(storageKey) ?? '[]');
-    const count   = Math.min(checked.length, total);
-    const pct     = total > 0 ? Math.round((count / total) * 100) : 0;
+    const checked = JSON.parse(localStorage.getItem(storageKey) ?? '[]')
+    const count = Math.min(checked.length, total)
+    const pct = total > 0 ? Math.round((count / total) * 100) : 0
 
     if (fill) {
-      fill.style.width = `${pct}%`;
-      fill.classList.toggle('is-complete', pct === 100);
+      fill.style.width = `${pct}%`
+      fill.classList.toggle('is-complete', pct === 100)
     }
 
     if (cursor) {
-      cursor.style.left    = `${pct}%`;
-      cursor.style.opacity = pct > 0 ? '1' : '0';
+      cursor.style.left = `${pct}%`
+      cursor.style.opacity = pct > 0 ? '1' : '0'
     }
 
-    if (pctEl)  pctEl.textContent  = `${pct}%`;
-    if (countEl) countEl.textContent = `${count} / ${total}`;
+    if (pctEl) pctEl.textContent = `${pct}%`
+    if (countEl) countEl.textContent = `${count} / ${total}`
 
-    if (dot) dot.classList.toggle('is-active', count > 0);
+    if (dot) dot.classList.toggle('is-active', count > 0)
 
     if (completeEl) {
-      completeEl.style.opacity = pct === 100 ? '1' : '0';
+      completeEl.style.opacity = pct === 100 ? '1' : '0'
     }
   }
 
   // React to same-tab toggles via custom event
-  window.addEventListener('gear:checklist-updated', update);
+  window.addEventListener('gear:checklist-updated', update)
 
   // React to other tabs / external changes via storage event
   window.addEventListener('storage', (e) => {
-    if (e.key === storageKey) update();
-  });
+    if (e.key === storageKey) update()
+  })
 
   // Initial render
-  document.addEventListener('DOMContentLoaded', update);
+  document.addEventListener('DOMContentLoaded', update)
 </script>

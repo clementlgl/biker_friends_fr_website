@@ -13,24 +13,25 @@ export default {
           text: 'var(--color-text)',
           muted: 'var(--color-muted)',
           accent: '#00A3C4',
-          accentSoft: '#58d7ec'
-        }
+          accentSoft: '#58d7ec',
+        },
       },
       fontFamily: {
         display: ['"Barlow Condensed"', '"Rajdhani"', 'sans-serif'],
-        tech: ['"IBM Plex Mono"', '"JetBrains Mono"', '"SFMono-Regular"', 'monospace']
+        tech: ['"IBM Plex Mono"', '"JetBrains Mono"', '"SFMono-Regular"', 'monospace'],
       },
       boxShadow: {
         tactical: '0 10px 30px rgba(0, 0, 0, 0.45)',
-        accent: '0 0 0 1px rgba(0, 163, 196, 0.45), 0 10px 24px rgba(0, 163, 196, 0.18)'
+        accent: '0 0 0 1px rgba(0, 163, 196, 0.45), 0 10px 24px rgba(0, 163, 196, 0.18)',
       },
       letterSpacing: {
-        tactical: '0.08em'
+        tactical: '0.08em',
       },
       backgroundImage: {
-        'tactical-overlay': 'linear-gradient(180deg, rgba(18,18,18,0.02) 0%, rgba(18,18,18,0.25) 58%, rgba(18,18,18,0.45) 100%)'
-      }
-    }
+        'tactical-overlay':
+          'linear-gradient(180deg, rgba(18,18,18,0.02) 0%, rgba(18,18,18,0.25) 58%, rgba(18,18,18,0.45) 100%)',
+      },
+    },
   },
-  plugins: []
-};
+  plugins: [],
+}
