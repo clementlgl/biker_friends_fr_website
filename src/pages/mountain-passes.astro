@@ -305,10 +305,23 @@ geoEntries.forEach(e => e.massifs.sort((a, b) => a.localeCompare(b)));
             })
           });
 
+          let plannedLine = '';
+          if (pass.plannedOpening) {
+            const plannedOpeningText = new Date(pass.plannedOpening).toLocaleString('fr-FR', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            plannedLine = `<p style="margin: 0 0 4px 0; color: #666;">Ouverture prévue: ${plannedOpeningText}</p>`;
+          }
+
           marker.bindPopup(`
             <div style="font-size: 12px;">
               <p style="font-weight: bold; margin: 0 0 4px 0;">${pass.name}</p>
               <p style="color: #666; margin: 0 0 4px 0;">${pass.altitude}m</p>
+              ${plannedLine}
               <p style="font-weight: bold; margin: 0; color: ${color}">${pass.status}</p>
             </div>
           `);

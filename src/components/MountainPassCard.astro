@@ -53,6 +53,15 @@ const lastUpdate = pass.updated ? new Date(pass.updated).toLocaleTimeString('fr-
   hour: '2-digit', 
   minute: '2-digit' 
 }) : '--:--';
+const plannedOpeningLabel = pass.plannedOpening
+  ? new Date(pass.plannedOpening).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  : null;
 ---
 
 <div class="group relative border border-tactical-line rounded-lg bg-tactical-panel p-5 transition-all hover:border-tactical-accent hover:shadow-accent overflow-hidden" data-pass-name={pass.name} data-pass-region={pass.region} data-pass-department={pass.department} data-pass-country={pass.country || ''} data-pass-massif={pass.massif || ''}>
@@ -82,6 +91,12 @@ const lastUpdate = pass.updated ? new Date(pass.updated).toLocaleTimeString('fr-
     <div>
       <p class="text-xs font-tech text-tactical-muted uppercase tracking-wider">Altitude</p>
       <p class="mt-1 font-display text-xl text-tactical-text">{pass.altitude.toLocaleString('fr-FR')} m</p>
+      {pass.plannedOpening && (
+        <div class="mt-2">
+          <p class="text-xs font-tech text-tactical-muted uppercase tracking-wider">Ouverture prévue</p>
+          <p class="mt-1 text-sm font-display text-tactical-text">{plannedOpeningLabel}</p>
+        </div>
+      )}
     </div>
     {pass.conditions && pass.conditions.length > 0 && (
       <div>
