@@ -60,14 +60,14 @@ const isAssetImage = typeof image !== 'string';
     <div class="absolute inset-0 bg-tactical-overlay"></div>
 
     <div class="absolute left-4 top-4 flex items-center gap-2">
-      <span class="border border-tactical-line bg-black/55 px-2.5 py-1 font-tech text-[10px] uppercase tracking-tactical text-tactical-muted">
-        {duration} days
+      <span class="border border-tactical-line bg-white/90 px-2.5 py-1 font-tech text-[10px] uppercase tracking-tactical text-tactical-text dark:bg-black/55 dark:text-tactical-muted">
+        {duration} jours
       </span>
     </div>
 
     <div class="absolute inset-x-0 bottom-0 p-4 sm:p-5">
       <p class="font-tech text-xs uppercase tracking-[0.22em] text-tactical-accent">{country}</p>
-      <h3 class="mt-2 max-w-[16ch] font-display text-3xl sm:text-5xl uppercase leading-[0.92] text-tactical-text">
+      <h3 class="mt-2 max-w-[16ch] font-display text-3xl sm:text-5xl uppercase leading-[0.92] text-white">
         {title}
       </h3>
     </div>
@@ -82,7 +82,7 @@ const isAssetImage = typeof image !== 'string';
     </dl>
 
     {draft ? (
-      <span class="relative z-20 inline-flex items-center border border-amber-400/40 bg-amber-300/10 px-3 py-2 font-tech text-[11px] uppercase tracking-[0.16em] text-amber-200">
+      <span class="relative z-20 inline-flex items-center px-3 py-2 font-tech text-[11px] uppercase tracking-[0.16em] border border-amber-200/60 bg-amber-100 text-amber-800 dark:border-amber-400/40 dark:bg-amber-300/10 dark:text-amber-200">
         Bientôt disponible
       </span>
     ) : (
