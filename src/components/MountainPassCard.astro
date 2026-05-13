@@ -36,13 +36,26 @@ const statusConfig = {
 };
 
 const config = statusConfig[pass.status];
+const countryEmojis: Record<string, string> = {
+  France: '🇫🇷',
+  Italie: '🇮🇹',
+  Suisse: '🇨🇭',
+  Autriche: '🇦🇹',
+  Espagne: '🇪🇸',
+  Allemagne: '🇩🇪',
+  Andorre: '🇦🇩',
+  Monaco: '🇲🇨',
+  Slovénie: '🇸🇮',
+};
+const countryLabel = pass.country || '';
+const countryEmoji = countryEmojis[countryLabel] || '';
 const lastUpdate = pass.updated ? new Date(pass.updated).toLocaleTimeString('fr-FR', { 
   hour: '2-digit', 
   minute: '2-digit' 
 }) : '--:--';
 ---
 
-<div class="group relative border border-tactical-line rounded-lg bg-tactical-panel p-5 transition-all hover:border-tactical-accent hover:shadow-accent overflow-hidden" data-pass-name={pass.name} data-pass-region={pass.region} data-pass-department={pass.department}>
+<div class="group relative border border-tactical-line rounded-lg bg-tactical-panel p-5 transition-all hover:border-tactical-accent hover:shadow-accent overflow-hidden" data-pass-name={pass.name} data-pass-region={pass.region} data-pass-department={pass.department} data-pass-country={pass.country || ''} data-pass-massif={pass.massif || ''}>
   <!-- Top section with status badge -->
   <div class="flex items-start justify-between gap-3 mb-4">
     <div class="flex-1">
@@ -52,6 +65,12 @@ const lastUpdate = pass.updated ? new Date(pass.updated).toLocaleTimeString('fr-
       <p class="mt-1 text-xs font-tech text-tactical-muted uppercase">
         {pass.region}
       </p>
+      {countryLabel && (
+        <p class="mt-1 text-xs font-tech text-tactical-muted uppercase flex items-center gap-1">
+          {countryEmoji && <span aria-hidden="true">{countryEmoji}</span>}
+          <span>{countryLabel}</span>
+        </p>
+      )}
     </div>
     <div class={`${config.bg} ${config.text} px-3 py-1 rounded text-xs font-tech uppercase font-semibold whitespace-nowrap`}>
       {config.label}
@@ -59,7 +78,7 @@ const lastUpdate = pass.updated ? new Date(pass.updated).toLocaleTimeString('fr-
   </div>
 
   <!-- Altitude and conditions -->
-  <div class="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-tactical-line">
+  <div class="grid grid-cols-2 gap-3 mb-4 pb-4">
     <div>
       <p class="text-xs font-tech text-tactical-muted uppercase tracking-wider">Altitude</p>
       <p class="mt-1 font-display text-xl text-tactical-text">{pass.altitude.toLocaleString('fr-FR')} m</p>
@@ -78,5 +97,5 @@ const lastUpdate = pass.updated ? new Date(pass.updated).toLocaleTimeString('fr-
     )}
   </div>
 
-  <div class="absolute top-0 left-0 h-1 bg-gradient-to-r" style={`background-color: ${config.color}`}></div>
+  <div class="absolute top-0 left-0 h-1 bg-linear-to-r" style={`background-color: ${config.color}`}></div>
 </div>

@@ -15,6 +15,8 @@ export interface MountainPass {
   source?: string;
   coordinates?: [number, number]; // [latitude, longitude]
   department?: string; // two-digit department code, e.g. '73'
+  country?: string;   // e.g. 'France', 'Italie'
+  massif?: string;    // e.g. 'Alpes du Nord', 'Pyrénées', 'Dolomites'
 }
 
 /**
@@ -165,6 +167,8 @@ export async function fetchSavoieRoutePasses(): Promise<MountainPass[]> {
         status: mapSavoieStatus(rawStatus),
         updated: pass.maj ? new Date(pass.maj) : new Date(),
         source: 'savoie-route.fr',
+        country: 'France',
+        massif: 'Alpes du Nord',
         coordinates: [pass.Latitude ?? pass.latitude ?? 0, pass.Longitude ?? pass.longitude ?? 0] as [number, number]
       };
     });
@@ -233,6 +237,8 @@ export async function fetchHautesAlpesPasses(): Promise<MountainPass[]> {
         status: HAUTES_ALPES_STATUS_MAP[properties.etatCol] || 'ALERT',
         updated: new Date(),
         source: 'inforoute.hautes-alpes.fr',
+        country: 'France',
+        massif: 'Alpes du Sud',
         coordinates: [lat, lon] as [number, number]
       };
     });
@@ -323,6 +329,8 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
         //   conditions: properties.code ? [properties.code] : undefined,
           updated: new Date(),
           source: 'inforoutes06.fr',
+          country: 'France',
+          massif: 'Alpes du Sud',
           coordinates: [lat, lon] as [number, number]
         };
       });
@@ -414,6 +422,8 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
         //   conditions: properties.code ? [properties.code] : undefined,
           updated: new Date(),
           source: 'inforoute74.fr',
+          country: 'France',
+          massif: 'Alpes du Nord',
           coordinates: [lat, lon] as [number, number]
         };
       });
@@ -500,6 +510,8 @@ export async function fetchInforoute04Passes(): Promise<MountainPass[]> {
         //   conditions: properties.code ? [properties.code] : undefined,
           updated: new Date(),
           source: 'inforoute04.fr',
+          country: 'France',
+          massif: 'Alpes du Sud',
           coordinates: [lat, lon] as [number, number]
         };
       });
@@ -595,6 +607,8 @@ export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
           status: status,
           updated: new Date(),
           source: 'inforoute.le64.fr',
+          country: 'France',
+          massif: 'Pyrénées',
           coordinates: [lat, lon] as [number, number]
         };
       });
@@ -679,6 +693,8 @@ export async function fetchInforoute66Passes(): Promise<MountainPass[]> {
           status: status,
           updated: new Date(),
           source: 'inforoute66.fr',
+          country: 'France',
+          massif: 'Pyrénées',
           coordinates: [lat, lon] as [number, number]
         };
       });
@@ -759,6 +775,8 @@ export async function fetchInforoute09Passes(): Promise<MountainPass[]> {
           status: status,
           updated: new Date(),
           source: 'inforoute09.fr',
+          country: 'France',
+          massif: 'Pyrénées',
           coordinates: [lat, lon] as [number, number]
         };
       });
@@ -840,6 +858,8 @@ export async function fetchInforoute31Passes(): Promise<MountainPass[]> {
           status: status,
           updated: new Date(),
           source: 'inforoute31.fr',
+          country: 'France',
+          massif: 'Pyrénées',
           coordinates: [lat, lon] as [number, number]
         };
       });
@@ -924,6 +944,8 @@ export async function fetchInforouteHaPyPasses(): Promise<MountainPass[]> {
           status,
           updated,
           source: 'inforoute.ha-py.fr',
+          country: 'France',
+          massif: 'Pyrénées',
           coordinates: [lat || 0, lon || 0] as [number, number]
         } as MountainPass;
       });
@@ -1003,6 +1025,8 @@ export async function fetchProvinceBZPasses(): Promise<MountainPass[]> {
           status,
           updated: it.publishDateTime ? new Date(it.publishDateTime) : new Date(),
           source: 'traffic.province.bz.it',
+          country: 'Italie',
+          massif: 'Dolomites',
           coordinates: [Number(it.Y ?? 0), Number(it.X ?? 0)] as [number, number],
           conditions: conditions.length ? conditions : undefined
         } as MountainPass;
@@ -1031,15 +1055,15 @@ export async function getAllMountainPasses(): Promise<MountainPass[]> {
 
     const merged = passes.flat();
 
-    // Sort by department (numeric), then by region, then by name
+    // Sort by country, then massif, then name
     merged.sort((a, b) => {
-      const da = a.department ? parseInt(String(a.department).padStart(2, '0'), 10) : Number.POSITIVE_INFINITY;
-      const db = b.department ? parseInt(String(b.department).padStart(2, '0'), 10) : Number.POSITIVE_INFINITY;
-      if (da !== db) return da - db;
+      const ca = a.country || '';
+      const cb = b.country || '';
+      if (ca !== cb) return ca.localeCompare(cb);
 
-      const ra = a.region || '';
-      const rb = b.region || '';
-      if (ra !== rb) return ra.localeCompare(rb);
+      const ma = a.massif || '';
+      const mb = b.massif || '';
+      if (ma !== mb) return ma.localeCompare(mb);
 
       return (a.name || '').localeCompare(b.name || '');
     });

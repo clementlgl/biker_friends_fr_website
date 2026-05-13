@@ -18,10 +18,33 @@ const stats = {
   alert: allPasses.filter(p => p.status === 'ALERT' || p.status === 'PARTIAL').length,
 };
 
-// Extract unique departments
-const deptSet = Array.from(new Set(allPasses.map(p => p.department || '').filter(Boolean)));
-deptSet.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-const departments = ['ALL', ...deptSet];
+// Extract unique countries and their massifs for two-level filter
+type GeoEntry = { country: string; emoji: string; massifs: string[] };
+const geoMap = new Map<string, GeoEntry>();
+const countryEmojis: Record<string, string> = {
+  France: '🇫🇷',
+  Italie: '🇮🇹',
+  Suisse: '🇨🇭',
+  Autriche: '🇦🇹',
+  Espagne: '🇪🇸',
+  Allemagne: '🇩🇪',
+  Andorre: '🇦🇩',
+  Monaco: '🇲🇨',
+  Slovénie: '🇸🇮',
+};
+for (const p of allPasses) {
+  if (!p.country) continue;
+  if (!geoMap.has(p.country)) {
+    geoMap.set(p.country, { country: p.country, emoji: countryEmojis[p.country] || '', massifs: [] });
+  }
+  const entry = geoMap.get(p.country)!;
+  if (p.massif && !entry.massifs.includes(p.massif)) {
+    entry.massifs.push(p.massif);
+  }
+}
+// Sort countries and their massifs alphabetically
+const geoEntries: GeoEntry[] = Array.from(geoMap.values()).sort((a, b) => a.country.localeCompare(b.country));
+geoEntries.forEach(e => e.massifs.sort((a, b) => a.localeCompare(b)));
 ---
 
 <BaseLayout title="État des Cols | Biker Friends">
@@ -110,20 +133,47 @@ const departments = ['ALL', ...deptSet];
         </div>
       </section>
 
-      <!-- Filters section (by department) -->
-      <section class="mb-8 flex flex-wrap items-center gap-3">
-        {departments.map(dept => (
-          <button 
-            data-department={dept}
-            class={`px-4 py-2 font-tech text-xs uppercase font-semibold rounded transition-colors ${
-              dept === 'ALL' 
-                ? 'bg-tactical-accent text-white' 
-                : 'border border-tactical-line text-tactical-text hover:border-tactical-accent'
-            }`}
+      <!-- Filters section — Géographie de l'Aventure -->
+      <section class="mb-8 space-y-3">
+        <!-- Level 1: Countries -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            data-country="ALL"
+            class="px-4 py-2 font-tech text-xs uppercase font-semibold rounded transition-colors bg-tactical-accent text-white"
           >
-            {dept === 'ALL' ? 'Tous les départements' : dept}
+            Tous
           </button>
-        ))}
+          {geoEntries.map(entry => (
+            <button
+              data-country={entry.country}
+              class="px-4 py-2 font-tech text-xs uppercase font-semibold rounded transition-colors border border-tactical-line text-tactical-text hover:border-tactical-accent"
+            >
+                {entry.emoji} {entry.country}
+            </button>
+          ))}
+        </div>
+
+        <!-- Level 2: Massifs (hidden until a country is selected) -->
+        <div id="massif-filters" class="hidden flex-wrap items-center gap-2">
+          {geoEntries.map(entry => (
+            <div data-massif-group={entry.country} class="hidden flex-wrap items-center gap-2">
+              <button
+                data-massif="ALL"
+                class="px-3 py-1.5 font-tech text-xs uppercase font-semibold rounded transition-colors bg-tactical-accent/70 text-white"
+              >
+                Tous les massifs
+              </button>
+              {entry.massifs.map(massif => (
+                <button
+                  data-massif={massif}
+                  class="px-3 py-1.5 font-tech text-xs uppercase font-semibold rounded transition-colors border border-tactical-line text-tactical-text hover:border-tactical-accent"
+                >
+                  {massif}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
       </section>
 
       <!-- Grid view container -->
@@ -307,30 +357,33 @@ const departments = ['ALL', ...deptSet];
         });
       }
 
-      // Filter passes by search + department
+      // Filter passes by search + country + massif
       const searchInput = document.getElementById('search-input');
       const passes = Array.from(document.querySelectorAll('[data-pass-name]'));
 
-      let currentDepartment = 'ALL';
+      let currentCountry = 'ALL';
+      let currentMassif = 'ALL';
       let currentQuery = '';
 
       function applyFilters() {
         const normalizedQuery = currentQuery.trim().toLowerCase();
         passes.forEach(passEl => {
           const name = passEl.getAttribute('data-pass-name')?.toLowerCase() || '';
-          const deptAttr = passEl.getAttribute('data-pass-department') || '';
+          const country = passEl.getAttribute('data-pass-country') || '';
+          const massif = passEl.getAttribute('data-pass-massif') || '';
           const matchesQuery = normalizedQuery === '' || name.includes(normalizedQuery);
-          const matchesDept = currentDepartment === 'ALL' || deptAttr === currentDepartment;
-          passEl.style.display = (matchesQuery && matchesDept) ? '' : 'none';
+          const matchesCountry = currentCountry === 'ALL' || country === currentCountry;
+          const matchesMassif = currentMassif === 'ALL' || massif === currentMassif;
+          passEl.style.display = (matchesQuery && matchesCountry && matchesMassif) ? '' : 'none';
         });
 
         // Update map markers if map initialized
         if (mapInitialized) {
           const filteredForMap = passesData.filter(pass => {
-            const dept = pass.department || '';
-            const matchesDept = currentDepartment === 'ALL' || dept === currentDepartment;
             const matchesQuery = currentQuery.trim() === '' || pass.name.toLowerCase().includes(currentQuery.trim().toLowerCase());
-            return matchesDept && matchesQuery;
+            const matchesCountry = currentCountry === 'ALL' || (pass.country || '') === currentCountry;
+            const matchesMassif = currentMassif === 'ALL' || (pass.massif || '') === currentMassif;
+            return matchesQuery && matchesCountry && matchesMassif;
           });
           renderMarkers(filteredForMap);
         }
@@ -341,20 +394,85 @@ const departments = ['ALL', ...deptSet];
         applyFilters();
       });
 
-      // Filter by department
-      const deptButtons = Array.from(document.querySelectorAll('[data-department]'));
-      deptButtons.forEach(button => {
+      // ── Country filter (Level 1) ──────────────────────────────────────────
+      const countryButtons = Array.from(document.querySelectorAll('[data-country]'));
+      const massifFiltersSection = document.getElementById('massif-filters');
+
+      function activateCountryButton(btn) {
+        countryButtons.forEach(b => {
+          b.classList.remove('bg-tactical-accent', 'text-white');
+          b.classList.add('border', 'border-tactical-line', 'text-tactical-text');
+        });
+        btn.classList.add('bg-tactical-accent', 'text-white');
+        btn.classList.remove('border', 'border-tactical-line', 'text-tactical-text');
+      }
+
+      countryButtons.forEach(button => {
         button.addEventListener('click', () => {
-          deptButtons.forEach(b => {
+          const selected = button.getAttribute('data-country') || 'ALL';
+          currentCountry = selected;
+          currentMassif = 'ALL';
+
+          activateCountryButton(button);
+
+          // Show/hide massif sub-filters
+          if (selected === 'ALL') {
+            massifFiltersSection?.classList.add('hidden');
+            massifFiltersSection?.classList.remove('flex');
+            // Hide all massif groups
+            document.querySelectorAll('[data-massif-group]').forEach(g => {
+              g.classList.add('hidden');
+              g.classList.remove('flex');
+            });
+          } else {
+            massifFiltersSection?.classList.remove('hidden');
+            massifFiltersSection?.classList.add('flex');
+            // Show only the matching group, hide others
+            document.querySelectorAll('[data-massif-group]').forEach(g => {
+              if (g.getAttribute('data-massif-group') === selected) {
+                g.classList.remove('hidden');
+                g.classList.add('flex');
+              } else {
+                g.classList.add('hidden');
+                g.classList.remove('flex');
+              }
+            });
+            // Reset massif buttons to default
+            document.querySelectorAll('[data-massif]').forEach(b => {
+              b.classList.remove('bg-tactical-accent', 'text-white');
+              b.classList.add('border', 'border-tactical-line', 'text-tactical-text');
+            });
+            // Activate "Tous les massifs" button in the shown group
+            const allMassifBtn = document.querySelector(`[data-massif-group="${selected}"] [data-massif="ALL"]`);
+            if (allMassifBtn) {
+              allMassifBtn.classList.add('bg-tactical-accent', 'text-white');
+              allMassifBtn.classList.remove('border', 'border-tactical-line', 'text-tactical-text');
+            }
+          }
+
+          applyFilters();
+        });
+      });
+
+      // ── Massif filter (Level 2) ───────────────────────────────────────────
+      document.addEventListener('click', (e) => {
+        const target = e.target;
+        if (!target || !target.hasAttribute || !target.hasAttribute('data-massif')) return;
+        const selected = target.getAttribute('data-massif') || 'ALL';
+        currentMassif = selected;
+
+        // Update massif button styles within same group
+        const group = target.closest('[data-massif-group]');
+        if (group) {
+          group.querySelectorAll('[data-massif]').forEach(b => {
             b.classList.remove('bg-tactical-accent', 'text-white');
             b.classList.add('border', 'border-tactical-line', 'text-tactical-text');
           });
-          button.classList.add('bg-tactical-accent', 'text-white');
-          button.classList.remove('border', 'border-tactical-line', 'text-tactical-text');
+          target.classList.add('bg-tactical-accent', 'text-white');
+          target.classList.remove('border', 'border-tactical-line', 'text-tactical-text');
+        }
 
-          currentDepartment = button.getAttribute('data-department') || 'ALL';
-          applyFilters();
-        });
+        applyFilters();
       });
     </script>
 </BaseLayout>
