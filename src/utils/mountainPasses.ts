@@ -10,7 +10,7 @@ export interface MountainPass {
   region?: string;
   status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT';
   direction?: 'UP' | 'DOWN' | 'BOTH';
-  conditions?: string[];
+  info?: string[];
   updated?: Date;
   plannedOpening?: string | Date;
   source?: string;
@@ -1057,7 +1057,7 @@ export async function fetchProvinceBZPasses(): Promise<MountainPass[]> {
           country: 'Italie',
           massif: 'Dolomites',
           coordinates: [Number(it.Y ?? 0), Number(it.X ?? 0)] as [number, number],
-          conditions: conditions.length ? conditions : undefined
+          info: conditions.length ? conditions : undefined
         } as MountainPass;
       });
   } catch (error) {
@@ -1184,7 +1184,7 @@ export async function fetchMuoversinPiemontePasses(): Promise<MountainPass[]> {
         country: 'Italie',
         massif: 'Alpes piémontaises',
         coordinates: [Number(pass.latitude ?? 0), Number(pass.longitude ?? 0)] as [number, number],
-        conditions: [state]
+        info: [state]
       } as MountainPass;
     });
   } catch (error) {
@@ -1265,7 +1265,7 @@ export async function fetchSwissTrafficPasses(): Promise<MountainPass[]> {
           country: 'Suisse',
           massif: 'Alpes',
           coordinates: [Number(event.Pos?.Lat ?? 0), Number(event.Pos?.Lng ?? 0)] as [number, number],
-          conditions: dic.Description ? [dic.Description] : undefined
+          info: dic.Description ? [dic.Description] : undefined
         } as MountainPass;
       });
   } catch (error) {
