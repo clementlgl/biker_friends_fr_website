@@ -512,6 +512,7 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
     return []
   }
 }
+
 export async function fetchInforoute04Passes(): Promise<MountainPass[]> {
   try {
     const formData = new URLSearchParams()
@@ -810,6 +811,7 @@ export async function fetchInforoute66Passes(): Promise<MountainPass[]> {
     return []
   }
 }
+
 export async function fetchInforoute09Passes(): Promise<MountainPass[]> {
   try {
     const formData = new URLSearchParams()
@@ -1446,7 +1448,7 @@ export function filterByDepartment(passes: MountainPass[], department: string): 
  * Build a URL-safe slug for a mountain pass detail page.
  */
 export function getMountainPassSlug(pass: Pick<MountainPass, 'id' | 'name'>): string {
-  return normalizeMountainPassSlug(pass.id || pass.name || 'unknown-pass')
+  return normalizeMountainPassSlug(pass.name)
 }
 
 /**
