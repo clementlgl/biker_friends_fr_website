@@ -290,8 +290,14 @@ export async function fetchHautesAlpesPasses(): Promise<MountainPass[]> {
 
     // Map Hautes-Alpes GeoJSON data to MountainPass format
     return data.features.map((feature: any) => {
-      const properties = feature
-      const [lon, lat] = feature.geometry?.coordinates || [0, 0]
+      const properties = feature?.properties || feature
+      const coords = feature?.geometry?.coordinates || properties?.geometry?.coordinates || [0, 0]
+      const [lon, lat] = coords
+      const info = Array.isArray(properties.situationsIcons)
+        ? properties.situationsIcons
+            .map((item: any) => stripHtml(item?.content))
+            .filter((item: string | undefined): item is string => Boolean(item))
+        : []
 
       return {
         id: `hautes-alpes-${properties.nomCol?.replace(/\s+/g, '-').toLowerCase()}`,
@@ -300,7 +306,8 @@ export async function fetchHautesAlpesPasses(): Promise<MountainPass[]> {
         region: `Hautes-Alpes - ${properties.nomZone || 'Unknown'}`,
         department: '05',
         status: HAUTES_ALPES_STATUS_MAP[properties.etatCol] || 'ALERT',
-        updated: new Date(),
+        info: info.length ? info : undefined,
+        updated: properties.generated ? new Date(properties.generated) : new Date(),
         source: 'inforoute.hautes-alpes.fr',
         country: 'France',
         massif: 'Alpes du Sud',
@@ -458,6 +465,7 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
         let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
         const codeStr = properties.code?.toLowerCase() || ''
         const iconUrl = properties.url_icone?.toLowerCase() || ''
+        const description = stripHtml(properties.description)
 
         // Try to match status from code property
         for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
@@ -491,7 +499,7 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
           region: `Haute-Savoie`,
           department: '74',
           status: status,
-          //   conditions: properties.code ? [properties.code] : undefined,
+          info: description ? [description] : undefined,
           updated: new Date(),
           source: 'inforoute74.fr',
           country: 'France',
