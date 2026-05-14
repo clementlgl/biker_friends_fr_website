@@ -100,6 +100,31 @@ const PASS_ALTITUDES: Record<string, number> = {
 }
 
 /**
+ * Supprime les balises HTML et décode les entités HTML courantes.
+ */
+function stripHtml(input?: string): string | undefined {
+  if (!input) return undefined
+  let s = String(input)
+    // Convertir les sauts de ligne HTML en espaces
+    .replace(/<\s*br\s*\/?>/gi, ' ')
+    .replace(/<\/(p|div)\s*>/gi, ' ')
+    // Retirer toutes les autres balises
+    .replace(/<[^>]+>/g, ' ')
+
+  // Décoder les entités HTML basiques
+  s = s
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+
+  // Réduire espaces multiples et trimmer
+  return s.replace(/\s+/g, ' ').trim()
+}
+
+/**
  * Fetch mountain pass data from Savoie Route API
  */
 export async function fetchSavoieRoutePasses(): Promise<MountainPass[]> {
@@ -166,6 +191,8 @@ export async function fetchSavoieRoutePasses(): Promise<MountainPass[]> {
     return detailedPasses.map((pass: any) => {
       const passName = pass.FRLabel || pass.Label || 'Unknown Pass'
       const rawStatus = pass.FREtat ?? pass.ENEtat ?? pass.Etat
+      const rawComment = stripHtml(pass.FRComment)
+      const infoStr = rawComment ? [rawComment] : undefined
 
       return {
         id: `savoie-${pass.idtInfo ?? pass.ID ?? pass.id ?? passName.replace(/\s+/g, '-').toLowerCase()}`,
@@ -175,6 +202,7 @@ export async function fetchSavoieRoutePasses(): Promise<MountainPass[]> {
         department: '73',
         status: mapSavoieStatus(rawStatus),
         updated: pass.maj ? new Date(pass.maj) : new Date(),
+        info: infoStr,
         source: 'savoie-route.fr',
         country: 'France',
         massif: 'Alpes du Nord',
@@ -334,6 +362,7 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
         let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
         const codeStr = properties.code?.toLowerCase() || ''
         const iconUrl = properties.url_icone?.toLowerCase() || ''
+        const infoStr = properties.description || ''
 
         // Try to match status from code property
         for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
@@ -366,7 +395,7 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
           region: `Alpes-Maritimes`,
           department: '06',
           status: status,
-          //   conditions: properties.code ? [properties.code] : undefined,
+          info: infoStr ? [infoStr] : undefined,
           updated: new Date(),
           source: 'inforoutes06.fr',
           country: 'France',
@@ -520,6 +549,7 @@ export async function fetchInforoute04Passes(): Promise<MountainPass[]> {
         let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
         const codeStr = properties.code?.toLowerCase() || ''
         const iconUrl = properties.url_icone?.toLowerCase() || ''
+        const description = stripHtml(properties.description)
 
         // Try to match status from code property
         for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
@@ -553,7 +583,7 @@ export async function fetchInforoute04Passes(): Promise<MountainPass[]> {
           region: `Alpes-de-Haute-Provence`,
           department: '04',
           status: status,
-          //   conditions: properties.code ? [properties.code] : undefined,
+          info: description ? [description] : undefined,
           updated: new Date(),
           source: 'inforoute04.fr',
           country: 'France',
