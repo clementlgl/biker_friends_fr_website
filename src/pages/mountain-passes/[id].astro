@@ -30,22 +30,26 @@ const statusConfig = {
   OPEN: {
     color: '#00A3C4',
     label: 'OUVERT',
-    badge: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
+    bg: 'bg-cyan-500/10',
+    text: 'text-cyan-600 dark:text-cyan-400',
   },
   CLOSED: {
     color: '#EF4444',
-    label: 'FERME',
-    badge: 'bg-red-500/10 text-red-300 border-red-500/30',
+    label: 'FERMÉ',
+    bg: 'bg-red-500/10',
+    text: 'text-red-600 dark:text-red-400',
   },
   PARTIAL: {
     color: '#F59E0B',
     label: 'PARTIEL',
-    badge: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+    bg: 'bg-amber-500/10',
+    text: 'text-amber-600 dark:text-amber-400',
   },
   ALERT: {
     color: '#F59E0B',
     label: 'ALERTE',
-    badge: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+    bg: 'bg-amber-500/10',
+    text: 'text-amber-600 dark:text-amber-400',
   },
 }
 
@@ -133,11 +137,11 @@ const sourceLabel = pass.source || null
           </p>
         </div>
 
-        <span
-          class={`inline-flex items-center border px-3 py-1.5 font-tech text-xs uppercase tracking-[0.14em] ${config.badge}`}
+        <div
+          class={`${config.bg} ${config.text} px-3 py-1 rounded text-xs font-tech uppercase font-semibold whitespace-nowrap`}
         >
           {config.label}
-        </span>
+        </div>
       </div>
 
       <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -155,7 +159,7 @@ const sourceLabel = pass.source || null
           <p class="mt-2 font-tech text-sm uppercase tracking-[0.12em] text-tactical-text">
             {
               (countryEmojis[pass.country || ''] ? `${countryEmojis[pass.country || '']} - ` : '') +
-                (pass.country || 'Non renseigne')
+                (pass.country || 'Non renseigné')
             }
           </p>
         </div>
@@ -165,7 +169,7 @@ const sourceLabel = pass.source || null
             Massif
           </p>
           <p class="mt-2 font-tech text-sm uppercase tracking-[0.12em] text-tactical-text">
-            {(pass.massif || 'Non renseigne').toUpperCase()}
+            {(pass.massif || 'Non renseigné').toUpperCase()}
           </p>
         </div>
 
@@ -228,7 +232,7 @@ const sourceLabel = pass.source || null
                     {pass.source}
                   </a>
                 ) : (
-                  pass.source || 'Non renseignee'
+                  pass.source || 'Non renseigné'
                 )
               }
             </dd>
