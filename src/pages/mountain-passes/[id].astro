@@ -1,0 +1,269 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import SiteHeader from '../../components/SiteHeader.astro'
+import SiteFooter from '../../components/SiteFooter.astro'
+import {
+  getAllMountainPasses,
+  getMountainPassSlug,
+  type MountainPass,
+} from '../../utils/mountainPasses'
+import PassMap from '../../components/PassMap.astro'
+
+const base = import.meta.env.BASE_URL
+
+export async function getStaticPaths() {
+  const passes = await getAllMountainPasses()
+
+  return passes.map((pass) => ({
+    params: { id: getMountainPassSlug(pass) },
+    props: { pass },
+  }))
+}
+
+interface Props {
+  pass: MountainPass
+}
+
+const { pass } = Astro.props as Props
+
+const statusConfig = {
+  OPEN: {
+    color: '#00A3C4',
+    label: 'OUVERT',
+    badge: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
+  },
+  CLOSED: {
+    color: '#EF4444',
+    label: 'FERME',
+    badge: 'bg-red-500/10 text-red-300 border-red-500/30',
+  },
+  PARTIAL: {
+    color: '#F59E0B',
+    label: 'PARTIEL',
+    badge: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+  },
+  ALERT: {
+    color: '#F59E0B',
+    label: 'ALERTE',
+    badge: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+  },
+}
+
+const config = statusConfig[pass.status]
+
+const countryEmojis: Record<string, string> = {
+  France: 'FR',
+  Italie: 'IT',
+  Suisse: 'CH',
+  Autriche: 'AT',
+  Espagne: 'ES',
+  Allemagne: 'DE',
+  Andorre: 'AD',
+  Monaco: 'MC',
+  Slovenie: 'SI',
+}
+
+const updatedLabel = pass.updated
+  ? new Date(pass.updated).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  : 'Non disponible'
+
+const plannedOpeningLabel = pass.plannedOpening
+  ? new Date(pass.plannedOpening).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  : null
+
+const hasCoords = Boolean(pass.coordinates && pass.coordinates[0] && pass.coordinates[1])
+const lat = hasCoords ? pass.coordinates![0] : null
+const lng = hasCoords ? pass.coordinates![1] : null
+const openStreetMapLink = hasCoords
+  ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=12/${lat}/${lng}`
+  : null
+
+/**
+ * Build clickable href from `pass.source` when possible.
+ */
+function makeSourceHref(source: string | undefined | null): string | null {
+  if (!source) return null
+  const s = String(source).trim()
+  if (/^https?:\/\//i.test(s)) return s
+  if (s.includes(' ')) return null
+  // If looks like a domain (contains a dot), prefix https://
+  if (/[a-z0-9\-]+\.[a-z]{2,}/i.test(s)) {
+    return 'https://' + s.replace(/^https?:\/\//i, '')
+  }
+  return null
+}
+
+const sourceHref = makeSourceHref(pass.source)
+const sourceLabel = pass.source || null
+---
+
+<BaseLayout title={`${pass.name} | Cols | Biker Friends`}>
+  <SiteHeader />
+
+  <main class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 pb-20">
+    <nav class="mb-8">
+      <a
+        href={`${base}mountain-passes`}
+        class="font-tech text-[11px] uppercase tracking-[0.2em] text-tactical-accent hover:text-tactical-accentSoft"
+      >
+        ← Retour aux cols
+      </a>
+    </nav>
+
+    <header class="border border-tactical-line bg-tactical-panel p-6 sm:p-8">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 class="font-display text-4xl leading-[0.95] text-tactical-text sm:text-5xl">
+            {pass.name.toUpperCase()}
+          </h1>
+          <p class="mt-3 font-tech text-xs uppercase tracking-[0.16em] text-tactical-muted">
+            {(pass.region || 'Region inconnue').toUpperCase()}
+          </p>
+        </div>
+
+        <span
+          class={`inline-flex items-center border px-3 py-1.5 font-tech text-xs uppercase tracking-[0.14em] ${config.badge}`}
+        >
+          {config.label}
+        </span>
+      </div>
+
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="border border-tactical-line bg-black/20 p-4">
+          <p class="font-tech text-[10px] uppercase tracking-[0.16em] text-tactical-muted">
+            Altitude
+          </p>
+          <p class="mt-2 font-display text-3xl leading-none text-tactical-text">
+            {Number(pass.altitude || 0).toLocaleString('fr-FR')} m
+          </p>
+        </div>
+
+        <div class="border border-tactical-line bg-black/20 p-4">
+          <p class="font-tech text-[10px] uppercase tracking-[0.16em] text-tactical-muted">Pays</p>
+          <p class="mt-2 font-tech text-sm uppercase tracking-[0.12em] text-tactical-text">
+            {
+              (countryEmojis[pass.country || ''] ? `${countryEmojis[pass.country || '']} - ` : '') +
+                (pass.country || 'Non renseigne')
+            }
+          </p>
+        </div>
+
+        <div class="border border-tactical-line bg-black/20 p-4">
+          <p class="font-tech text-[10px] uppercase tracking-[0.16em] text-tactical-muted">
+            Massif
+          </p>
+          <p class="mt-2 font-tech text-sm uppercase tracking-[0.12em] text-tactical-text">
+            {(pass.massif || 'Non renseigne').toUpperCase()}
+          </p>
+        </div>
+
+        <div class="border border-tactical-line bg-black/20 p-4">
+          <p class="font-tech text-[10px] uppercase tracking-[0.16em] text-tactical-muted">
+            Departement
+          </p>
+          <p class="mt-2 font-tech text-sm uppercase tracking-[0.12em] text-tactical-text">
+            {(pass.department || 'N/A').toUpperCase()}
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <section class="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+      <article class="border border-tactical-line bg-tactical-panel p-6">
+        <h2 class="font-display text-3xl leading-none text-tactical-text">Informations</h2>
+
+        <dl class="mt-6 divide-y divide-tactical-line border border-tactical-line">
+          <div class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-muted">
+              Statut
+            </dt>
+            <dd class="font-tech text-sm uppercase tracking-[0.14em] text-tactical-text">
+              {pass.status}
+            </dd>
+          </div>
+
+          <div class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-muted">
+              Derniere mise a jour
+            </dt>
+            <dd class="font-tech text-sm text-tactical-text">{updatedLabel}</dd>
+          </div>
+
+          {
+            plannedOpeningLabel && (
+              <div class="flex items-center justify-between gap-4 px-4 py-3">
+                <dt class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-muted">
+                  Ouverture prevue
+                </dt>
+                <dd class="font-tech text-sm text-tactical-text">{plannedOpeningLabel}</dd>
+              </div>
+            )
+          }
+
+          <div class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="font-tech text-[11px] uppercase tracking-[0.16em] text-tactical-muted">
+              Source
+            </dt>
+            <dd class="font-tech text-sm text-tactical-text">
+              {
+                sourceHref ? (
+                  <a
+                    href={sourceHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-tactical-accent hover:underline"
+                  >
+                    {pass.source}
+                  </a>
+                ) : (
+                  pass.source || 'Non renseignee'
+                )
+              }
+            </dd>
+          </div>
+          {
+            pass.info && pass.info.length > 0 && (
+              <div class="px-4 py-3">
+                <dd class="font-tech text-sm text-tactical-text space-y-2">
+                  {pass.info.map((item: string) => (
+                    <p class="m-0">{item}</p>
+                  ))}
+                </dd>
+              </div>
+            )
+          }
+        </dl>
+      </article>
+
+      <aside class="border border-tactical-line bg-tactical-panel p-6">
+        <h2 class="font-display text-3xl leading-none text-tactical-text">Position</h2>
+
+        {
+          hasCoords ? (
+            <div class="mt-5 space-y-4">
+              <PassMap lat={lat} lng={lng} heightClass="h-[280px]" zoom={12} />
+            </div>
+          ) : (
+            <p class="mt-5 border border-tactical-line bg-black/20 px-4 py-3 font-tech text-sm text-tactical-muted">
+              Aucune coordonnee disponible pour ce col.
+            </p>
+          )
+        }
+      </aside>
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>

@@ -1,0 +1,151 @@
+---
+interface Props {
+  lat?: number | null
+  lng?: number | null
+  heightClass?: string
+  zoom?: number
+}
+
+const { lat, lng, heightClass = 'h-[220px]', zoom = 11 } = Astro.props
+---
+
+<div
+  class:list={[
+    'js-pass-map w-full overflow-hidden rounded-md border border-tactical-line bg-tactical-panel',
+    heightClass,
+  ]}
+  data-lat={lat ?? ''}
+  data-lng={lng ?? ''}
+  data-zoom={String(zoom)}
+>
+</div>
+
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+/>
+
+<script>
+  function initPassMaps() {
+    if (typeof document === 'undefined') return
+    if (typeof window === 'undefined') return
+
+    // Ensure Leaflet is loaded; if not, inject CDN script and retry on load
+    if (typeof L === 'undefined') {
+      if (!document.getElementById('leaflet-cdn-script')) {
+        const s = document.createElement('script')
+        s.id = 'leaflet-cdn-script'
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'
+        s.onload = initPassMaps
+        document.head.appendChild(s)
+      }
+      return
+    }
+
+    // Fix default marker icons
+    try {
+      delete L.Icon.Default.prototype._getIconUrl
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl:
+          'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+      })
+    } catch (e) {
+      // ignore
+    }
+
+    const nodes = document.querySelectorAll('.js-pass-map[data-lat][data-lng]')
+    nodes.forEach((node) => {
+      if (node.dataset.initialized === 'true') return
+
+      const lat = parseFloat(String(node.dataset.lat))
+      const lng = parseFloat(String(node.dataset.lng))
+
+      if (Number.isNaN(lat) || Number.isNaN(lng)) {
+        node.innerHTML =
+          '<p class="font-tech text-sm text-tactical-muted p-4">Aucune coordonnée disponible pour ce col.</p>'
+        return
+      }
+
+      node.dataset.initialized = 'true'
+
+      const zoomVal = Number(node.dataset.zoom || '11')
+      const map = L.map(node, { zoomControl: true, preferCanvas: true }).setView(
+        [lat, lng],
+        Number.isNaN(zoomVal) ? 11 : zoomVal
+      )
+
+      const CARTO_DARK = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      const CARTO_LIGHT = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+      const tileOptions = {
+        maxZoom: 20,
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      }
+
+      const getTileUrl = () =>
+        document.documentElement.classList.contains('dark') ? CARTO_DARK : CARTO_LIGHT
+
+      let tileLayer = L.tileLayer(getTileUrl(), tileOptions).addTo(map)
+
+      // Observe theme changes (dark class on <html>) and update tiles
+      try {
+        const observer = new MutationObserver((mutations) => {
+          for (const m of mutations) {
+            if (m.type === 'attributes' && m.attributeName === 'class') {
+              try {
+                const newUrl = getTileUrl()
+                if (typeof tileLayer.setUrl === 'function') {
+                  tileLayer.setUrl(newUrl)
+                } else {
+                  map.removeLayer(tileLayer)
+                  tileLayer = L.tileLayer(newUrl, tileOptions).addTo(map)
+                }
+              } catch (err) {
+                // ignore tile swap errors
+              }
+              break
+            }
+          }
+        })
+
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+      } catch (e) {
+        // MutationObserver not available? ignore
+      }
+
+      L.marker([lat, lng]).addTo(map)
+
+      // ensure correct sizing after insertion
+      setTimeout(() => {
+        try {
+          map.invalidateSize()
+        } catch (e) {
+          // ignore
+        }
+      }, 200)
+    })
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPassMaps)
+  } else {
+    initPassMaps()
+  }
+</script>
+
+<style is:global>
+  .js-pass-map {
+    border-radius: 0.375rem;
+  }
+
+  .leaflet-popup-content-wrapper {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 0.5rem;
+  }
+
+  .leaflet-popup-tip {
+    background-color: #1e293b;
+  }
+</style>

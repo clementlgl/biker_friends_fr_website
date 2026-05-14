@@ -1403,3 +1403,22 @@ export function filterByDepartment(passes: MountainPass[], department: string): 
   const code = String(department).padStart(2, '0')
   return passes.filter((pass) => String(pass.department || '').padStart(2, '0') === code)
 }
+
+/**
+ * Build a URL-safe slug for a mountain pass detail page.
+ */
+export function getMountainPassSlug(pass: Pick<MountainPass, 'id' | 'name'>): string {
+  return normalizeMountainPassSlug(pass.id || pass.name || 'unknown-pass')
+}
+
+/**
+ * Normalize a slug/identifier to compare URL params with pass identifiers.
+ */
+export function normalizeMountainPassSlug(value: string): string {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}

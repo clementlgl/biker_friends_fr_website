@@ -2,13 +2,17 @@
 import SiteHeader from '../components/SiteHeader.astro'
 import SiteFooter from '../components/SiteFooter.astro'
 import MountainPassCard from '../components/MountainPassCard.astro'
-import { getAllMountainPasses } from '../utils/mountainPasses'
+import { getAllMountainPasses, getMountainPassSlug } from '../utils/mountainPasses'
 import BaseLayout from '../layouts/BaseLayout.astro'
 
 const base = import.meta.env.BASE_URL
 
 // Fetch all mountain passes
 const allPasses = await getAllMountainPasses()
+const allPassesForClient = allPasses.map((pass) => ({
+  ...pass,
+  slug: getMountainPassSlug(pass),
+}))
 
 // Group passes by status for statistics
 const stats = {
@@ -239,7 +243,7 @@ geoEntries.forEach((e) => e.massifs.sort((a, b) => a.localeCompare(b)))
 
   <SiteFooter />
 
-  <script define:vars={{ passesDataStr: JSON.stringify(allPasses), basePath: base }}>
+  <script define:vars={{ passesDataStr: JSON.stringify(allPassesForClient), basePath: base }}>
     // Initialize map with CDN
     let mapInitialized = false
     const passesData = typeof passesDataStr === 'string' ? JSON.parse(passesDataStr) : passesDataStr
@@ -253,6 +257,15 @@ geoEntries.forEach((e) => e.massifs.sort((a, b) => a.localeCompare(b)))
       CLOSED: '#EF4444',
       ALERT: '#F59E0B',
       PARTIAL: '#F59E0B',
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;')
     }
 
     async function initializeMap() {
@@ -324,6 +337,11 @@ geoEntries.forEach((e) => e.massifs.sort((a, b) => a.localeCompare(b)))
         if (!pass.coordinates) return
         const [lat, lng] = pass.coordinates
         const color = statusColors[pass.status] || '#8b949e'
+        const safeName = escapeHtml(pass.name)
+        const safeStatus = escapeHtml(pass.status)
+        const safeAltitude = Number(pass.altitude || 0)
+        const passSlug = encodeURIComponent(pass.slug || pass.id || pass.name || '')
+        const detailHref = `${BASE}mountain-passes/${passSlug}`
 
         // Build marker HTML (recolor svg if available)
         let markerHtml = ''
@@ -358,15 +376,16 @@ geoEntries.forEach((e) => e.massifs.sort((a, b) => a.localeCompare(b)))
             hour: '2-digit',
             minute: '2-digit',
           })
-          plannedLine = `<p style="margin: 0 0 4px 0; color: #666;">Ouverture prévue: ${plannedOpeningText}</p>`
+          plannedLine = `<p style="margin: 0 0 4px 0; color: #666;">Ouverture prévue: ${escapeHtml(plannedOpeningText)}</p>`
         }
 
         marker.bindPopup(`
             <div style="font-size: 12px;">
-              <p style="font-weight: bold; margin: 0 0 4px 0;">${pass.name}</p>
-              <p style="color: #666; margin: 0 0 4px 0;">${pass.altitude}m</p>
+              <p style="font-weight: bold; margin: 0 0 4px 0;">${safeName}</p>
+              <p style="color: #666; margin: 0 0 4px 0;">${safeAltitude}m</p>
               ${plannedLine}
-              <p style="font-weight: bold; margin: 0; color: ${color}">${pass.status}</p>
+              <p style="font-weight: bold; margin: 0; color: ${color}">${safeStatus}</p>
+              <a href="${detailHref}" style="display:inline-block;margin-top:8px;color:#00A3C4;text-decoration:none;font-weight:600;">Voir la fiche</a>
             </div>
           `)
 
