@@ -243,6 +243,38 @@ const INFOROUTE06_STATUS_MAP: Record<string, 'OPEN' | 'CLOSED' | 'PARTIAL' | 'AL
   partiel: 'PARTIAL',
 }
 
+function formatInforouteRecurrenceOpenHours(recurrence: unknown): string | undefined {
+  if (!recurrence || typeof recurrence !== 'object') return undefined
+
+  const r = recurrence as {
+    heure_recurrence_debut?: string
+    heure_recurrence_fin?: string
+    jours_recurrence?: unknown
+    next_day?: number | string
+  }
+
+  const start = String(r.heure_recurrence_debut ?? '').trim()
+  const end = String(r.heure_recurrence_fin ?? '').trim()
+  if (!start || !end) return undefined
+
+  const nextDay = Number(r.next_day ?? 0) === 1
+  const rawDays = Array.isArray(r.jours_recurrence) ? r.jours_recurrence : []
+  const enabledDays = rawDays.map((v) => Number(v)).map((v) => (Number.isNaN(v) ? 0 : v))
+
+  const dayNames = ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim']
+  const activeDays = dayNames.filter((_, index) => enabledDays[index] === 1)
+  const allDays = activeDays.length === 7
+
+  const dayLabel = allDays
+    ? 'tous les jours'
+    : activeDays.length
+      ? `les ${activeDays.join(', ')}`
+      : ''
+
+  const rangeLabel = `${start}-${end}${nextDay ? ' (+1)' : ''}`
+  return dayLabel ? `Ouvert ${dayLabel} de ${rangeLabel}` : `Ouvert sur la plage ${rangeLabel}`
+}
+
 const SWISS_STATUS_BY_CAT: Record<number, 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT'> = {
   41: 'CLOSED',
   43: 'PARTIAL',
@@ -353,8 +385,15 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
       return []
     }
 
-    // Map Inforoute06 GeoJSON data to MountainPass format
-    return data.features
+    type Inforoute06RawPass = {
+      cleanTitle: string
+      status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT'
+      altitude: number
+      coordinates: [number, number]
+      info: string[]
+    }
+
+    const rawPasses: Inforoute06RawPass[] = data.features
       .filter((feature: any) => {
         const properties = feature.properties || {}
         const titre = (properties.titre || '').toLowerCase()
@@ -380,6 +419,11 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
           }
         }
 
+        const openHours =
+          status === 'OPEN'
+            ? formatInforouteRecurrenceOpenHours(properties.recurrence_active)
+            : undefined
+
         return {
           cleanTitle,
           status,
@@ -400,17 +444,71 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
 
             return 0
           })(),
-          region: `Alpes-Maritimes`,
-          department: '06',
-          status: status,
-          info: infoStr ? [infoStr] : undefined,
-          updated: new Date(),
-          source: 'inforoutes06.fr',
-          country: 'France',
-          massif: 'Alpes du Sud',
           coordinates: [lat, lon] as [number, number],
+          info: [description, openHours].filter(
+            (item): item is string => typeof item === 'string' && item.trim().length > 0
+          ),
         }
       })
+
+    const grouped = new Map<string, Inforoute06RawPass[]>()
+    for (const pass of rawPasses) {
+      const key = normalizeMountainPassSlug(pass.cleanTitle || '')
+      if (!grouped.has(key)) grouped.set(key, [])
+      grouped.get(key)!.push(pass)
+    }
+
+    return Array.from(grouped.values()).map((group) => {
+      const first = group[0]
+      const statusSet = new Set(group.map((pass: Inforoute06RawPass) => pass.status))
+      const hasOpen = statusSet.has('OPEN')
+      const hasClosed = statusSet.has('CLOSED')
+      const hasPartial = statusSet.has('PARTIAL')
+
+      const mergedStatus: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' =
+        hasOpen && hasClosed
+          ? 'PARTIAL'
+          : hasPartial
+            ? 'PARTIAL'
+            : hasClosed
+              ? 'CLOSED'
+              : hasOpen
+                ? 'OPEN'
+                : 'ALERT'
+
+      const mergedInfo: string[] = Array.from(
+        new Set(
+          group
+            .flatMap((pass: Inforoute06RawPass) => pass.info)
+            .filter((item: string) => typeof item === 'string' && item.trim().length > 0)
+        )
+      )
+
+      const altitude = group.reduce(
+        (max: number, pass: Inforoute06RawPass) => Math.max(max, pass.altitude || 0),
+        0
+      )
+      const coordinates =
+        group.find((pass: Inforoute06RawPass) => {
+          const [lat, lon] = pass.coordinates
+          return Number(lat) !== 0 || Number(lon) !== 0
+        })?.coordinates || first.coordinates
+
+      return {
+        id: `inforoute06-${(first.cleanTitle || 'unknown').replace(/\s+/g, '-').toLowerCase()}`,
+        name: first.cleanTitle || 'Unknown Pass',
+        altitude,
+        region: `Alpes-Maritimes`,
+        department: '06',
+        status: mergedStatus,
+        info: mergedInfo.length ? mergedInfo : undefined,
+        updated: new Date(),
+        source: 'inforoutes06.fr',
+        country: 'France',
+        massif: 'Alpes du Sud',
+        coordinates,
+      }
+    })
   } catch (error) {
     console.error('Failed to fetch Inforoute06 passes:', error)
     return []
@@ -616,16 +714,14 @@ export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
     formData.append('action', '374')
     formData.append('protect', '1')
 
-    const url =
+    const targetUrl =
       'https://inforoute.le64.fr/mod_turbolead/mod/inforoute/index.php?action=374&protect=1'
+    const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         Accept: 'application/json, text/javascript, */*; q=0.01',
         'X-Requested-With': 'XMLHttpRequest',
-        'User-Agent':
-          'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36',
-        'Accept-Encoding': 'gzip, deflate, br',
       },
     })
 
@@ -1547,3 +1643,4 @@ export function normalizeMountainPassSlug(value: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 }
+
