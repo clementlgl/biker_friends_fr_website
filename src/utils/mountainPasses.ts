@@ -655,6 +655,9 @@ export async function fetchInforoute04Passes(): Promise<MountainPass[]> {
       .map((feature: any) => {
         const properties = feature.properties || {}
         const [lon, lat] = feature.geometry?.coordinates || [0, 0]
+        const title = String(properties.titre || '')
+        const baseTitle = title.split(' - ')[0].trim()
+        const cleanTitle = baseTitle.replace(/\s*\([^)]*\)\s*$/, '').trim()
 
         // Parse status from code (e.g., "C14 Ouvert") or url_icone
         let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
@@ -671,13 +674,21 @@ export async function fetchInforoute04Passes(): Promise<MountainPass[]> {
         }
 
         return {
-          id: `inforoute04-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
-          name: properties.titre || 'Unknown Pass',
+          id: `inforoute04-${cleanTitle.replace(/\s+/g, '-').toLowerCase()}`,
+          name: cleanTitle || 'Unknown Pass',
           // Parse altitude from properties.altitude if present, otherwise try to extract from the title
           altitude: ((): number => {
             if (properties.altitude) {
               const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''))
               if (!Number.isNaN(n)) return n
+            }
+
+            const sourceTitle = String(properties.titre || '')
+            const altitudeInParentheses = sourceTitle.match(/\(([\d\s,.]+)\s*m\)/i)
+            if (altitudeInParentheses && altitudeInParentheses[1]) {
+              const cleaned = altitudeInParentheses[1].replace(/[^\d]/g, '')
+              const parsed = parseInt(cleaned, 10)
+              if (!Number.isNaN(parsed)) return parsed
             }
 
             const title = properties.titre || ''
@@ -950,6 +961,9 @@ export async function fetchInforoute09Passes(): Promise<MountainPass[]> {
       .map((feature: any) => {
         const properties = feature.properties || {}
         const [lon, lat] = feature.geometry?.coordinates || [0, 0]
+        const title = String(properties.titre || '')
+        const baseTitle = title.split(' - ')[0].trim()
+        const cleanTitle = baseTitle.replace(/\s*\([^)]*\)\s*$/, '').trim()
 
         let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
         const codeStr = properties.code?.toLowerCase() || ''
@@ -963,12 +977,20 @@ export async function fetchInforoute09Passes(): Promise<MountainPass[]> {
         }
 
         return {
-          id: `inforoute09-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
-          name: properties.titre || 'Unknown Pass',
+          id: `inforoute09-${cleanTitle.replace(/\s+/g, '-').toLowerCase()}`,
+          name: cleanTitle || 'Unknown Pass',
           altitude: ((): number => {
             if (properties.altitude) {
               const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''))
               if (!Number.isNaN(n)) return n
+            }
+
+            const sourceTitle = String(properties.titre || '')
+            const altitudeInParentheses = sourceTitle.match(/\(([\d\s,.]+)\s*m\)/i)
+            if (altitudeInParentheses && altitudeInParentheses[1]) {
+              const cleaned = altitudeInParentheses[1].replace(/[^\d]/g, '')
+              const parsed = parseInt(cleaned, 10)
+              if (!Number.isNaN(parsed)) return parsed
             }
 
             const title = properties.titre || ''
@@ -1643,4 +1665,3 @@ export function normalizeMountainPassSlug(value: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 }
-
