@@ -364,12 +364,13 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
       .map((feature: any) => {
         const properties = feature.properties || {}
         const [lon, lat] = feature.geometry?.coordinates || [0, 0]
+        const cleanTitle = (properties.titre || '').split('-')[0].trim()
 
         // Parse status from code (e.g., "C14 Ouvert") or url_icone
         let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
         const codeStr = properties.code?.toLowerCase() || ''
         const iconUrl = properties.url_icone?.toLowerCase() || ''
-        const infoStr = properties.description || ''
+        const description = stripHtml(properties.description)
 
         // Try to match status from code property
         for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
@@ -380,8 +381,8 @@ export async function fetchInforoute06Passes(): Promise<MountainPass[]> {
         }
 
         return {
-          id: `inforoute06-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
-          name: properties.titre || 'Unknown Pass',
+          cleanTitle,
+          status,
           altitude: ((): number => {
             if (properties.altitude) {
               const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''))
@@ -461,6 +462,9 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
         const properties = feature.properties || {}
         const [lon, lat] = feature.geometry?.coordinates || [0, 0]
 
+        // Clean the title by removing altitude and road information (e.g., "COL DES FLEURIES - 920M (RD2 FILLIÈRE)" -> "COL DES FLEURIES")
+        const cleanTitle = (properties.titre || '').split('-')[0].trim()
+
         // Parse status from code (e.g., "C14 Ouvert") or url_icone
         let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
         const codeStr = properties.code?.toLowerCase() || ''
@@ -476,8 +480,8 @@ export async function fetchInforoute74Passes(): Promise<MountainPass[]> {
         }
 
         return {
-          id: `inforoute74-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
-          name: properties.titre || 'Unknown Pass',
+          id: `inforoute74-${cleanTitle.replace(/\s+/g, '-').toLowerCase()}`,
+          name: cleanTitle || 'Unknown Pass',
           // Parse altitude from properties.altitude if present, otherwise try to extract from the title
           altitude: ((): number => {
             if (properties.altitude) {
@@ -1394,6 +1398,88 @@ export async function fetchSwissTrafficPasses(): Promise<MountainPass[]> {
   }
 }
 
+const STATUS_PRIORITY: Array<MountainPass['status']> = ['OPEN', 'ALERT', 'PARTIAL', 'CLOSED']
+
+function pickMergedStatus(statuses: Array<MountainPass['status']>): MountainPass['status'] {
+  return statuses.reduce<MountainPass['status']>((current, next) => {
+    const currentPriority = STATUS_PRIORITY.indexOf(current)
+    const nextPriority = STATUS_PRIORITY.indexOf(next)
+    return nextPriority > currentPriority ? next : current
+  }, 'OPEN')
+}
+
+function mergeMountainPassGroup(group: MountainPass[]): MountainPass {
+  const base = group[0]
+  const infoSet = new Set<string>()
+  const sourceSet = new Set<string>()
+
+  let altitude = 0
+  let latestUpdated: Date | undefined
+  let plannedOpening: Date | string | undefined
+  let coordinates: [number, number] | undefined
+
+  for (const pass of group) {
+    if (Array.isArray(pass.info)) {
+      for (const item of pass.info) {
+        const value = String(item || '').trim()
+        if (value) infoSet.add(value)
+      }
+    }
+
+    if (pass.source) sourceSet.add(pass.source)
+
+    if ((pass.altitude || 0) > altitude) altitude = pass.altitude || 0
+
+    if (pass.updated instanceof Date && !Number.isNaN(pass.updated.getTime())) {
+      if (!latestUpdated || pass.updated > latestUpdated) latestUpdated = pass.updated
+    }
+
+    if (pass.plannedOpening) {
+      const candidate =
+        pass.plannedOpening instanceof Date ? pass.plannedOpening : new Date(pass.plannedOpening)
+      if (!Number.isNaN(candidate.getTime())) {
+        if (!plannedOpening || candidate > new Date(plannedOpening)) {
+          plannedOpening = candidate
+        }
+      }
+    }
+
+    if (!coordinates && Array.isArray(pass.coordinates)) {
+      const [lat, lon] = pass.coordinates
+      if (Number(lat) !== 0 || Number(lon) !== 0) {
+        coordinates = [Number(lat), Number(lon)]
+      }
+    }
+  }
+
+  const mergedStatus = pickMergedStatus(group.map((pass) => pass.status))
+
+  return {
+    ...base,
+    status: mergedStatus,
+    altitude,
+    info: infoSet.size ? Array.from(infoSet) : undefined,
+    source: sourceSet.size ? Array.from(sourceSet).join(', ') : base.source,
+    updated: latestUpdated || base.updated,
+    plannedOpening: plannedOpening || base.plannedOpening,
+    coordinates: coordinates || base.coordinates,
+  }
+}
+
+function mergeMountainPassesByName(passes: MountainPass[]): MountainPass[] {
+  const grouped = new Map<string, MountainPass[]>()
+
+  for (const pass of passes) {
+    const key = normalizeMountainPassSlug(pass.name)
+    if (!grouped.has(key)) grouped.set(key, [])
+    grouped.get(key)!.push(pass)
+  }
+
+  return Array.from(grouped.values()).map((group) =>
+    group.length === 1 ? group[0] : mergeMountainPassGroup(group)
+  )
+}
+
 export async function getAllMountainPasses(): Promise<MountainPass[]> {
   try {
     const passes = await Promise.all([
@@ -1412,7 +1498,7 @@ export async function getAllMountainPasses(): Promise<MountainPass[]> {
       fetchSwissTrafficPasses(), // Switzerland
     ])
 
-    const merged = passes.flat()
+    const merged = mergeMountainPassesByName(passes.flat())
 
     // Sort by country, then massif, then name
     merged.sort((a, b) => {
