@@ -1151,7 +1151,8 @@ export async function fetchInforoute31Passes(): Promise<MountainPass[]> {
 
 export async function fetchInforouteHaPyPasses(): Promise<MountainPass[]> {
   try {
-    const url = 'https://inforoute.ha-py.fr/myd/proxy.php?cluster=&tifid=&type=30.02&cc=12345'
+    const url =
+      'https://inforoute.ha-py.fr/myd/proxy.php?cluster=&tifid=&type=30.09;30.06;30.01;30.02;30.05&theme=&categorie=30.03.02;31.04.02;30.05.02'
     const response = await fetch(url)
     if (!response.ok) {
       console.error('Inforoute Ha-Py API error:', response.status)
@@ -1211,17 +1212,33 @@ export async function fetchInforouteHaPyPasses(): Promise<MountainPass[]> {
           }
         }
 
-        // Statut heuristique depuis titre / soustitre / catégorie
+        // Priorité au code categorie quand il est fourni par l'API.
         let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
+        const categories = Array.isArray(it.categorie)
+          ? it.categorie.map((v: unknown) => String(v || '').trim()).filter(Boolean)
+          : String(it.categorie || '')
+              .split(/[;,]/)
+              .map((v: string) => v.trim())
+              .filter(Boolean)
+
+        if (categories.includes('30.02.06')) status = 'CLOSED'
+        else if (categories.includes('30.03.02')) status = 'OPEN'
+
+        // Fallback heuristique si categorie ne permet pas de conclure.
         const lower = (titleRaw + ' ' + String(it.soustitre || it.sous_titre || '')).toLowerCase()
-        if (lower.includes('ferme') || lower.includes('fermeture') || lower.includes('fermet'))
+        if (
+          status === 'ALERT' &&
+          (lower.includes('ferme') || lower.includes('fermeture') || lower.includes('fermet'))
+        )
           status = 'CLOSED'
-        else if (lower.includes('ouvert') || lower.includes('ouverture')) status = 'OPEN'
+        else if (status === 'ALERT' && (lower.includes('ouvert') || lower.includes('ouverture')))
+          status = 'OPEN'
         else if (
-          lower.includes('partiel') ||
-          lower.includes('alternat') ||
-          lower.includes('sens unique') ||
-          lower.includes('une voie')
+          status === 'ALERT' &&
+          (lower.includes('partiel') ||
+            lower.includes('alternat') ||
+            lower.includes('sens unique') ||
+            lower.includes('une voie'))
         )
           status = 'PARTIAL'
 
