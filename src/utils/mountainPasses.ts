@@ -719,15 +719,110 @@ export async function fetchInforoute04Passes(): Promise<MountainPass[]> {
   }
 }
 
+function getInforouteFeatureCoordinates(feature: any): [number, number] {
+  const direct = feature?.geometry?.coordinates
+  if (Array.isArray(direct) && direct.length >= 2) {
+    const [lon, lat] = direct
+    return [Number(lat ?? 0), Number(lon ?? 0)]
+  }
+
+  const geometries = feature?.geometry?.geometries
+  if (Array.isArray(geometries)) {
+    const point = geometries.find((g: any) => g?.type === 'Point' && Array.isArray(g?.coordinates))
+    if (point?.coordinates?.length >= 2) {
+      const [lon, lat] = point.coordinates
+      return [Number(lat ?? 0), Number(lon ?? 0)]
+    }
+  }
+
+  return [0, 0]
+}
+
+function mapInforoute64PayloadToPasses(data: any): MountainPass[] {
+  if (!data?.features || !Array.isArray(data.features)) {
+    return []
+  }
+
+  return data.features
+    .filter((feature: any) => {
+      const properties = feature.properties || {}
+      const titre = (properties.titre || '').toLowerCase()
+      const code = (properties.code || '').toUpperCase()
+      return titre.includes('col ') && code.startsWith('C')
+    })
+    .map((feature: any) => {
+      const properties = feature.properties || {}
+      const [lat, lon] = getInforouteFeatureCoordinates(feature)
+
+      let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
+      const codeStr = properties.code?.toLowerCase() || ''
+      const iconUrl = properties.url_icone?.toLowerCase() || ''
+
+      for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
+        if (codeStr.includes(key) || iconUrl.includes(key)) {
+          status = value
+          break
+        }
+      }
+
+      return {
+        id: `inforoute64-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
+        name: properties.titre || 'Unknown Pass',
+        altitude: ((): number => {
+          if (properties.altitude) {
+            const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''))
+            if (!Number.isNaN(n)) return n
+          }
+
+          const title = properties.titre || ''
+          const match = title.match(/-\s*([\d\s,.]+)m/i) || title.match(/([\d\s,.]+)m/i)
+          if (match && match[1]) {
+            const cleaned = match[1].replace(/[^\d]/g, '')
+            const parsed = parseInt(cleaned, 10)
+            if (!Number.isNaN(parsed)) return parsed
+          }
+
+          return 0
+        })(),
+        region: `Pyrénées-Atlantiques`,
+        department: '64',
+        status: status,
+        updated: new Date(),
+        source: 'inforoute.le64.fr',
+        country: 'France',
+        massif: 'Pyrénées',
+        coordinates: [lat, lon] as [number, number],
+      }
+    })
+}
+
+async function loadInforoute64FallbackPasses(reason: string): Promise<MountainPass[]> {
+  try {
+    const module = await import('../assets/mountainpasses/inforoute.le64.json')
+    const data = (module as { default?: any }).default ?? module
+    const mapped = mapInforoute64PayloadToPasses(data)
+
+    if (!mapped.length) {
+      console.error('Inforoute64 fallback file has no usable pass data')
+      return []
+    }
+
+    console.warn(`Using Inforoute64 local fallback (${reason}) with ${mapped.length} pass(es)`)
+    return mapped
+  } catch (fallbackError) {
+    console.error('Failed to load Inforoute64 local fallback file:', fallbackError)
+    return []
+  }
+}
+
 export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
   try {
     const formData = new URLSearchParams()
     formData.append('action', '374')
     formData.append('protect', '1')
 
-    const targetUrl =
+    const url =
       'https://inforoute.le64.fr/mod_turbolead/mod/inforoute/index.php?action=374&protect=1'
-    const url = `https://bikerfriends-proxy-cors.clement-laigle8.workers.dev/?url=${encodeURIComponent(targetUrl)}`
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -744,7 +839,7 @@ export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
         'response:',
         String(text).slice(0, 2000)
       )
-      return []
+      return await loadInforoute64FallbackPasses(`http-${response.status}`)
     }
 
     let data: any
@@ -757,7 +852,7 @@ export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
         'responseText:',
         String(text).slice(0, 2000)
       )
-      return []
+      return await loadInforoute64FallbackPasses('json-parse-error')
     }
 
     if (!data.features || !Array.isArray(data.features)) {
@@ -767,64 +862,13 @@ export async function fetchInforouteLE64Passes(): Promise<MountainPass[]> {
         'sample:',
         String(text).slice(0, 2000)
       )
-      return []
+      return await loadInforoute64FallbackPasses('unexpected-payload')
     }
 
-    return data.features
-      .filter((feature: any) => {
-        const properties = feature.properties || {}
-        const titre = (properties.titre || '').toLowerCase()
-        const code = (properties.code || '').toUpperCase()
-        return titre.includes('col ') && code.startsWith('C')
-      })
-      .map((feature: any) => {
-        const properties = feature.properties || {}
-        const [lon, lat] = feature.geometry?.coordinates || [0, 0]
-
-        let status: 'OPEN' | 'CLOSED' | 'PARTIAL' | 'ALERT' = 'ALERT'
-        const codeStr = properties.code?.toLowerCase() || ''
-        const iconUrl = properties.url_icone?.toLowerCase() || ''
-
-        for (const [key, value] of Object.entries(INFOROUTE06_STATUS_MAP)) {
-          if (codeStr.includes(key) || iconUrl.includes(key)) {
-            status = value
-            break
-          }
-        }
-
-        return {
-          id: `inforoute64-${properties.titre?.replace(/\s+/g, '-').toLowerCase()}`,
-          name: properties.titre || 'Unknown Pass',
-          // Parse altitude from properties.altitude if present, otherwise try to extract from the title
-          altitude: ((): number => {
-            if (properties.altitude) {
-              const n = Number(String(properties.altitude).replace(/[^\d.-]/g, ''))
-              if (!Number.isNaN(n)) return n
-            }
-
-            const title = properties.titre || ''
-            const match = title.match(/-\s*([\d\s,.]+)m/i) || title.match(/([\d\s,.]+)m/i)
-            if (match && match[1]) {
-              const cleaned = match[1].replace(/[^\d]/g, '')
-              const parsed = parseInt(cleaned, 10)
-              if (!Number.isNaN(parsed)) return parsed
-            }
-
-            return 0
-          })(),
-          region: `Pyrénées-Atlantiques`,
-          department: '64',
-          status: status,
-          updated: new Date(),
-          source: 'inforoute.le64.fr',
-          country: 'France',
-          massif: 'Pyrénées',
-          coordinates: [lat, lon] as [number, number],
-        }
-      })
+    return mapInforoute64PayloadToPasses(data)
   } catch (error) {
     console.error('Failed to fetch Inforoute64 passes:', error)
-    return []
+    return await loadInforoute64FallbackPasses('runtime-error')
   }
 }
 
